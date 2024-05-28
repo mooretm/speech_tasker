@@ -1,7 +1,7 @@
 """ Import matrix file view for Speech Tasker. 
 
     Written by: Travis M. Moore
-    Last edited: May 22, 2024
+    Last edited: May 28, 2024
 """
 
 ###########
@@ -16,8 +16,13 @@ from idlelib.tooltip import Hovertip
 from tkinter import filedialog
 from tkinter import ttk
 
+# Add custom path
+try:
+    sys.path.append(os.environ['TMPY'])
+except KeyError:
+    sys.path.append('C:\\Users\\MooTra\\Code\\Python')
+
 # Custom
-sys.path.append(os.environ['TMPY'])
 import tmpy
 
 ##########

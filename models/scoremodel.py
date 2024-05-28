@@ -10,7 +10,6 @@
 ###########
 # Standard library
 import logging
-import statistics
 
 ###########
 # Logging #

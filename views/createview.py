@@ -9,11 +9,19 @@
 ###########
 # Standard library
 import logging
+import os
+import sys
 import tkinter as tk
 from idlelib.tooltip import Hovertip
 from tkinter import filedialog
 from tkinter import messagebox
 from tkinter import ttk
+
+# Add custom path
+try:
+    sys.path.append(os.environ['TMPY'])
+except KeyError:
+    sys.path.append('C:\\Users\\MooTra\\Code\\Python')
 
 # Custom
 import tmpy
