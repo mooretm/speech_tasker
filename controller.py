@@ -14,7 +14,6 @@
 ###########
 # Standard library
 import datetime
-import json
 import logging.config
 import logging.handlers
 import os
@@ -40,45 +39,13 @@ import setup
 import tmpy
 import views
 from tmpy import tkgui
-from tmpy.functions.helper_funcs import string_to_list
+from tmpy.functions import helper_funcs
 
 ##########
 # Logger #
 ##########
 # Create new logger
 logger = logging.getLogger(__name__)
-
-def setup_logging(NAME):
-    """ Create output log file path. 
-        Import and update logging config JSON file.
-        Apply config to logger.
-    """
-    # Create logging output file path based on app name
-    flat_name = tmpy.functions.helper_funcs.flatten_text(NAME)
-    _app_with_ext = flat_name + '.log.jsonl'
-    filename = os.path.join(Path.home(), flat_name, _app_with_ext)
-
-    # Specify logging config file path
-    try:
-        config_file = os.path.join(
-            os.environ['TMPY'],
-            'tmpy',
-            'logger',
-            'logger_config.json'
-        )
-    except KeyError:
-        config_file = tmpy.logger.LOGGER_CONFIG_JSON
-
-    # Import and update logging config file
-    with open(config_file) as f_in:
-        config = json.load(f_in)
-        # Update output file location based on app name
-        config['handlers']['file']['filename'] = filename
-        # Pass in custom JSONFormatter
-        config['formatters']['json']['()'] = tmpy.logger.JSONFormatter
-
-    # Apply logging config
-    logging.config.dictConfig(config)
 
 #################
 # Splash Screen #
@@ -126,7 +93,7 @@ class Application(tk.Tk):
         #############
         self.NAME = 'Speech Tasker'
         self.VERSION = '0.1.0'
-        self.EDITED = 'May 23, 2024'
+        self.EDITED = 'May 28, 2024'
 
         ################
         # Window setup #
@@ -152,9 +119,9 @@ class Application(tk.Tk):
 
         # Set up custom logger as soon as config dir is created
         # (i.e., after settings model has been initialized)
-        setup_logging(self.NAME)
+        config = tmpy.functions.logging_funcs.setup_logging(self.NAME)
+        logging.config.dictConfig(config)
         logger.debug("Started custom logger")
-        logger.debug("Initializing application")
 
         # Default public attributes
         self.level_data = []
@@ -281,7 +248,6 @@ class Application(tk.Tk):
 
         # Center main window
         self.center_window()
-        #self.center_window(self)
 
         # Initialization successful
         logger.info('Application initialized successfully')
@@ -547,10 +513,10 @@ class Application(tk.Tk):
         # Create dict of arguments
         pars = {
             'filepath': vals['sentence_file_path'],
-            'lists': string_to_list(vals['sentence_lists'], 'int'),
+            'lists': helper_funcs.string_to_list(vals['sentence_lists'], 'int'),
             'sentences_per_list': vals['sentences_per_list'],
-            'levels': string_to_list(vals['sentence_levels'], 'int'),
-            'speakers': string_to_list(vals['sentence_speakers'], 'int'),
+            'levels': helper_funcs.string_to_list(vals['sentence_levels'], 'int'),
+            'speakers': helper_funcs.string_to_list(vals['sentence_speakers'], 'int'),
             'repetitions': vals['repetitions'],
             'randomize': vals['randomize'],
             'write': True
@@ -716,7 +682,7 @@ class Application(tk.Tk):
         try:
             routing=[self.th.trial_info['speaker']]
         except AttributeError:
-            routing = tmpy.functions.helper_funcs.string_to_list(
+            routing = helper_funcs.string_to_list(
                 self.settings['channel_routing'].get(), 'int')
             
         # Attempt to present audio

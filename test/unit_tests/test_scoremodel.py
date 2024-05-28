@@ -25,11 +25,9 @@ def scoremodel():
 ##############
 # Unit Tests #
 ##############
-# class Test_Speaker:
-#     """ Tests for the HintModel class. """
-#     def test_init(self, hintmodel):
-#         # Assert
-#         assert hintmodel
+def test__init(scoremodel):
+    # Assert
+    assert scoremodel.outcome == None
 
 
 
