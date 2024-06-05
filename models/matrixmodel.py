@@ -43,11 +43,11 @@ class ImportSpeechTaskerMatrix(MatrixFile):
             # Randomize trials
             if self.kwargs['randomize'] == 1:
                 randomized = self.randomize(repeated)
-                if self.kwargs['write'] == True:
+                if self.kwargs['write'] == 1:
                     randomized.to_csv("matrix_file.csv", index=False)
                 return randomized
             else:
-                if self.kwargs['write'] == True:
+                if self.kwargs['write'] == 1:
                     repeated.to_csv("matrix_file.csv", index=False)
                 return repeated
         except TypeError as e:

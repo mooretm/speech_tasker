@@ -9,15 +9,6 @@ __all__ = [
 ]
 
 
-from views.settingsview import (
-    SettingsView
-)
-
-__all__ += [
-    'SettingsView'
-]
-
-
 from views.createview import (
     CreateView
 )

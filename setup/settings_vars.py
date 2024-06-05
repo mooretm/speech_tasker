@@ -14,10 +14,9 @@ fields = {
     'import_audio_path': {'type': 'str', 'value': "Please select a path"},
     'matrix_file_path': {'type': 'str', 'value': "Please select a path"},
     'sentence_file_path': {'type': 'str', 'value': 'Please select a file'},
-    #'step_sizes': {'type': 'str', 'value': '4, 4, 4, 4, 2'},
+    'write_matrix': {'type': 'int', 'value': 0},
 
     # Presentation variables
-    #'starting_level_dB': {'type': 'float', 'value': 65},
     'sentence_levels': {'type': 'str', 'value': '70, 75'},
     'noise_level_dB': {'type': 'float', 'value': 65},
     'sentence_speakers': {'type': 'str', 'value': '1, 2, 3'},
@@ -37,7 +36,6 @@ fields = {
     'slm_offset': {'type': 'float', 'value': 100.0},
 
     # Version control variables
-    'config_file_status': {'type': 'int', 'value': 0},
     'check_for_updates': {'type': 'str', 'value': 'yes'},
     'version_lib_path': {'type': 'str', 'value': r'\\starfile\Public\Temp\MooreT\Personal Files\admin\versions.xlsx'},
 }

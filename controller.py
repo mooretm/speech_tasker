@@ -95,8 +95,8 @@ class Application(tk.Tk):
         # Constants #
         #############
         self.NAME = 'Speech Tasker'
-        self.VERSION = '0.1.1'
-        self.EDITED = 'May 28, 2024'
+        self.VERSION = '0.1.2'
+        self.EDITED = 'June 05, 2024'
 
         ################
         # Window setup #
@@ -160,7 +160,6 @@ class Application(tk.Tk):
         # Create callback dictionary
         event_callbacks = {
             # File menu
-            #'<<FileSettings>>': lambda _: self._show_settings_view(),
             '<<FileImportMatrixFile>>': lambda _: self._import_mfile_view(),
             '<<FileCreateMatrixFile>>': lambda _: self._create_mfile_view(),
             '<<FileStart>>': lambda _: self.on_start(),
@@ -242,9 +241,6 @@ class Application(tk.Tk):
                     message="The version library is unreachable!",
                     detail="Please check that you have access to Starfile."
                 )
-
-        # Destroy splash screen
-        #splash_screen.destroy()
 
         # Temporarily disable Help menu until documents are written
         self.menu.help_menu.entryconfig('README...', state='disabled')
@@ -333,7 +329,7 @@ class Application(tk.Tk):
             'filepath': vals['matrix_file_path'],
             'repetitions': vals['repetitions'],
             'randomize': vals['randomize'],
-            'write': False
+            'write': self.settings['write_matrix'].get()
         }
 
         # Create and write matrix CSV file
@@ -668,7 +664,7 @@ class Application(tk.Tk):
                 message="Cannot find the audio file!",
                 detail="Go to File>Session to specify a valid audio path."
             )
-            self._show_settings_view()
+            #self._show_settings_view()
             return
         except tmpy.audio_handlers.InvalidAudioType:
             raise

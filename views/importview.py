@@ -140,9 +140,9 @@ class ImportView(tk.Toplevel):
             variable=self.settings['randomize']
             )
         check_random.grid(
-            row=5, 
-            column=5, 
-            columnspan=20, 
+            row=5,
+            column=5,
+            columnspan=20,
             sticky='w',
             **widget_options
             )
@@ -251,7 +251,19 @@ class ImportView(tk.Toplevel):
             command=self._get_matrix_file,
             ).grid(row=10, column=10, sticky='w', **widget_options)
             
+        #self.write_matrix_var = tk.IntVar(value=-1)
+        ttk.Checkbutton(
+            lfrm_matrixpath, 
+            text="Write matrix file to CSV",
+            variable=self.settings['write_matrix'], #self.write_matrix_var,
+            onvalue=1,
+            offvalue=-1,
+            takefocus=0
+            ).grid(row=15, column=5, **widget_options)
 
+    #################
+    # Submit Button #
+    #################
         # Submit button
         btn_submit = ttk.Button(
             self, 
