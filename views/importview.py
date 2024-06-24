@@ -1,7 +1,7 @@
 """ Import matrix file view for Speech Tasker. 
 
     Written by: Travis M. Moore
-    Last edited: May 28, 2024
+    Last edited: June 19, 2024
 """
 
 ###########
@@ -12,8 +12,7 @@ import logging
 import os
 import sys
 import tkinter as tk
-from idlelib.tooltip import Hovertip
-from tkinter import filedialog
+from tkinter import messagebox
 from tkinter import ttk
 
 # Add custom path
@@ -24,6 +23,7 @@ except KeyError:
 
 # Custom
 import tmpy
+from tmpy.tkgui import widgets as w
 
 ##########
 # Logger #
@@ -43,6 +43,24 @@ class ImportView(tk.Toplevel):
         # Assign attributes
         self.parent = parent
         self.settings = settings
+
+        """ This is getting silly. Maybe just rename control variables
+        as they should appear in error messages.
+
+        That still leaves the issue of updating variables when filling
+        out the form... But maybe those values aren't written to file?
+            Actually, is this really a problem? Might not be. 
+        """
+        # Control variable dict
+        self._vars = {
+            'Subject': ('subject', tk.StringVar(
+                value=self.settings['subject'].get()
+            )),
+            'Condition': ('condition', tk.StringVar()),
+            'Presentations': ('repetitions', tk.IntVar()),
+            'Randomize': ('randomize', tk.IntVar()),
+            'Noise Level': ('noise_level_dB', tk.DoubleVar())
+        }
         
         # Window setup
         self.withdraw()
@@ -54,13 +72,11 @@ class ImportView(tk.Toplevel):
     def _draw_widgets(self):
         """ Populate the MainView with widgets. """
         logger.debug("Drawing MainView widgets")
+
         ##########
         # Frames #
         ##########
-        # Tooltip delay (ms)
-        tt_delay = 1000
-
-        # Shared frame settings
+        # Shared frame options
         frame_options = {
             'padx': 10, 
             'pady': 10, 
@@ -68,8 +84,9 @@ class ImportView(tk.Toplevel):
             'ipady': 5,
             'sticky': 'nsew'
             }
+        # Shared widget options
         widget_options = {'padx': 5, 'pady': (10, 0)}
-
+        
         # Session info
         lfrm_session = ttk.Labelframe(self, text='Session Information')
         lfrm_session.grid(row=5, column=5, **frame_options)
@@ -82,188 +99,119 @@ class ImportView(tk.Toplevel):
         lfrm_noise = ttk.Labelframe(self, text='Noise Options')
         lfrm_noise.grid(row=15, column=5, **frame_options)
 
+        # AskPathWidgets
+        lfrm_path = ttk.Labelframe(self, text="File Locations")
+        lfrm_path.grid(row=5, rowspan=16, column=10, **frame_options)
+
         # Audio file browser
-        lfrm_audiopath = ttk.Labelframe(self, text="Audio File Directory")
-        lfrm_audiopath.grid(
-            row=20, 
-            column=5, 
-            **frame_options, 
-            )
+        lfrm_audiopath = ttk.Labelframe(lfrm_path, text="Audio File Directory")
+        lfrm_audiopath.grid(row=5, column=5, **frame_options)
 
         # Matrix file browser
-        lfrm_matrixpath = ttk.Labelframe(self, text='Matrix File Path')
-        lfrm_matrixpath.grid(
-            row=25, 
-            column=5, 
-            **frame_options, 
-            )
+        lfrm_matrixpath = ttk.Labelframe(lfrm_path, text='Matrix File Path')
+        lfrm_matrixpath.grid(row=10, column=5, **frame_options)
 
         ###################
         # Session Widgets #
         ###################
         # Subject
-        lbl_sub = ttk.Label(lfrm_session, text="Subject:")
-        lbl_sub.grid(row=5, column=5, sticky='e', **widget_options)
-        sub_tt = Hovertip(
-            anchor_widget=lbl_sub,
-            text="A unique subject identifier."+
-                "\nCan be alpha, numeric, or both.",
-            hover_delay=tt_delay
-            )
-        ttk.Entry(lfrm_session, 
-            textvariable=self.settings['subject']
-            ).grid(row=5, column=10, sticky='w', **widget_options)
-
+        w.LabelInput(
+            lfrm_session,
+            label="Subject",
+            var=self._vars['Subject'][1], #self.settings['subject'],
+            input_class=w.RequiredEntry,
+            tool_tip="A unique subject identifier."
+                + "\nCan be alpha, numeric, or both."
+        ).grid(row=5, column=5, padx=5, pady=(5,0))
 
         # Condition
-        lbl_condition = ttk.Label(lfrm_session, text="Condition:")
-        lbl_condition.grid(row=10, column=5, sticky='e', **widget_options)
-        condition_tt = Hovertip(
-            anchor_widget=lbl_condition,
-            text="A unique condition name.\nCan be alpha, numeric, or both." +
-                "\nSeparate words with underscores.",
-            hover_delay=tt_delay
-            )
-        ttk.Entry(
-            lfrm_session, 
-            textvariable=self.settings['condition']
-            ).grid(row=10, column=10, sticky='w', **widget_options)
+        w.LabelInput(
+            lfrm_session,
+            label="Condition",
+            var=self._vars['Condition'][1], #self.settings['condition'],
+            input_class=w.RequiredEntry,
+            tool_tip="A unique condition name."
+                + "\nCan be alpha, numeric, or both."
+                + "\nSeparate words with underscores."
+        ).grid(row=5, column=10, padx=5, pady=(5,0))
 
         ###########################
         # Stimulus Option Widgets #
         ###########################
+        # Presentations
+        w.LabelInput(
+            lfrm_stimulus,
+            label="Presentations",
+            var=self._vars['Presentations'][1], #self.settings['repetitions'],
+            input_class=w.RequiredEntry,
+            tool_tip="Number of times to present the trials in the "
+                + "matrix file."
+        ).grid(row=5, column=5, padx=5, pady=(5,0))
+
         # Randomize
-        check_random = ttk.Checkbutton(
-            lfrm_stimulus, 
-            text="Randomize",
-            takefocus=0, 
-            variable=self.settings['randomize']
-            )
-        check_random.grid(
-            row=5,
-            column=5,
-            columnspan=20,
-            sticky='w',
-            **widget_options
-            )
-        
-        # Repetitions
-        ttk.Label(
-            lfrm_stimulus, 
-            text="Presentation(s):", 
-            takefocus=0
-            ).grid(
-                row=10, 
-                column=5, 
-                sticky='e', 
-                **widget_options
-                )
-        ttk.Entry(
-            lfrm_stimulus, 
-            width=5, 
-            textvariable=self.settings['repetitions']
-            ).grid(
-                row=10,
-                column=10,
-                **widget_options
-                )
+        w.LabelInput(
+            lfrm_stimulus,
+            label="Randomize",
+            var=self._vars['Randomize'][1], #self.settings['randomize'],
+            input_class=ttk.Checkbutton,
+            input_args={'takefocus': 0},
+            tool_tip="Randomize trials in provided matrix file."
+        ).grid(row=5, column=10, padx=5, pady=(5,0), sticky='n')
 
         #################
         # Noise Widgets #
         #################
         # Noise level
-        lbl_noise_level = ttk.Label(lfrm_noise, text="Level:")
-        lbl_noise_level.grid(row=5, column=5, sticky='e', **widget_options)
-        noise_level_tt = Hovertip(
-            anchor_widget=lbl_noise_level,
-            text="A single presentation level for the noise.",
-            hover_delay=tt_delay
-            )
-        ttk.Entry(
-            lfrm_noise, 
-            width=7,
-            textvariable=self.settings['noise_level_dB']
-            ).grid(row=5, column=10, sticky='w', **widget_options)
+        w.LabelInput(
+            lfrm_noise,
+            label="Level",
+            var=self._vars['Noise Level'][1], #self.settings['noise_level_dB'],
+            input_class=w.RequiredEntry,
+            tool_tip="Level of the noise."
+        ).grid(row=5, column=5, padx=5, pady=(5,0), sticky='n')
 
-        ###################
-        # Audio Directory #
-        ###################
-        # Descriptive label
-        ttk.Label(lfrm_audiopath, text="Path:").grid(
-            row=5, column=5, sticky='e', **widget_options)
-
-        # Create textvariable
-        self.audio_var = tk.StringVar()
-
-        # Fit path to label
-        self._shorten_path(
-            full_path=self.settings['import_audio_path'].get(),
-            num_chars=45, 
-            label_var=self.audio_var
-            )
-
-        # Audio directory label
-        ttk.Label(
-            lfrm_audiopath, 
-            textvariable=self.audio_var, 
-            borderwidth=2, 
-            relief="solid", 
-            width=40
-            ).grid(row=5, column=10, sticky='w', **widget_options)
-        ttk.Button(
-            lfrm_audiopath, 
-            text="Browse", 
-            command=self._get_audio_directory,
-            ).grid(row=10, column=10, sticky='w', **widget_options)
-
-        ###############
-        # Matrix File #
-        ###############
-        # Descriptive label
-        ttk.Label(lfrm_matrixpath, text="Path:").grid(
-            row=5, 
-            column=5, 
-            sticky='e', 
-            **widget_options
-            )
-
-        # Create textvariable
-        self.matrix_var = tk.StringVar()
-
-        # Fit path to label
-        self._shorten_path(
-            full_path=self.settings['matrix_file_path'].get(),
-            num_chars=45, 
-            label_var=self.matrix_var
-            )
+        #####################
+        # File Path Widgets #
+        #####################
+        self.columnconfigure(5, weight=1)
         
-        # Matrix file label
-        ttk.Label(
-            lfrm_matrixpath, 
-            textvariable=self.matrix_var, 
-            borderwidth=2, 
-            relief="solid", 
-            width=40
-            ).grid(row=5, column=10, sticky='w', **widget_options)
-        ttk.Button(
-            lfrm_matrixpath, 
-            text="Browse", 
-            command=self._get_matrix_file,
-            ).grid(row=10, column=10, sticky='w', **widget_options)
-            
-        #self.write_matrix_var = tk.IntVar(value=-1)
+        # Audio files directory
+        w.AskPathGroup(
+            parent=lfrm_audiopath,
+            var=self.settings['import_audio_path'],
+            title_args={'text': 'Audio Files'},
+            type='dir',
+            tool_tip="Path to folder with audio files."
+        ).grid(row=5, column=5)
+
+        # Matrix file path
+        w.AskPathGroup(
+            parent=lfrm_matrixpath,
+            var=self.settings['matrix_file_path'],
+            title_args={'text': 'Matrix File'},
+            type='file',
+            tool_tip="Path to the matrix file."
+        ).grid(row=5, column=5)
+
+        # Save matrix file checkbutton
         ttk.Checkbutton(
             lfrm_matrixpath, 
             text="Write matrix file to CSV",
-            variable=self.settings['write_matrix'], #self.write_matrix_var,
+            variable=self.settings['write_matrix'],
             onvalue=1,
             offvalue=-1,
             takefocus=0
-            ).grid(row=15, column=5, **widget_options)
+            ).grid(
+                row=15, 
+                column=5, 
+                columnspan=15, 
+                **widget_options, 
+                sticky='w'
+                )
 
-    #################
-    # Submit Button #
-    #################
+        #################
+        # Submit Button #
+        #################
         # Submit button
         btn_submit = ttk.Button(
             self, 
@@ -278,52 +226,25 @@ class ImportView(tk.Toplevel):
     #############
     # Functions #
     #############
-    def _shorten_path(self, full_path, num_chars, label_var=None):
-        # Truncate path
-        short_path = tmpy.helper_funcs.truncate_path(
-            full_path=full_path,
-            num_chars=num_chars
-        )
-        if label_var:
-            # Update label value with truncated path
-            label_var.set(short_path)
-
-
-    def _get_audio_directory(self):
-        """ Get audio files directory from user via file browser. """
-        # Get directory from user
-        self.settings['import_audio_path'].set(
-            filedialog.askdirectory(title="Audio File Directory")
-        )
-        # Fit path length to label
-        self._shorten_path(
-            full_path=self.settings['import_audio_path'].get(),
-            num_chars=45,
-            label_var=self.audio_var
-            )
-
-
-    def _get_matrix_file(self):
-        """ Get matrix file path from user via file browser. """
-        matrix_path = filedialog.askopenfilename(
-                title="Matrix File",
-                filetypes=(("CSV Files","*.csv"),)
-                )
-        self.settings['matrix_file_path'].set(matrix_path)
-        # Fit path length to label
-        self._shorten_path(
-            full_path=self.settings['matrix_file_path'].get(),
-            num_chars=45,
-            label_var=self.matrix_var
-            )
-
     def _on_submit(self):
         """ Send submit event to controller and close window. """
-        logger.debug("Sending 'SUBMIT' event to controller")
+        # Validate form
+        errors = tmpy.functions.tkgui_funcs.get_errors(self.settings)
+        if errors:
+            messagebox.showerror(
+                title="Invalid Entry",
+                message="Unable to save form!",
+                detail="Error in fields:\n{}"
+                .format('\n'.join(errors.keys()))
+            )
+            return
+        logger.info("Sending 'SUBMIT' event to %s", self.parent.REF)
         self.parent.event_generate('<<ImportViewSubmit>>')
-        logger.debug("Destroying ImportView instance")
+        logger.info("Destroying ImportView instance")
         self.destroy()
 
-
+################
+# Module Guard #
+################
 if __name__ == "__main__":
     pass

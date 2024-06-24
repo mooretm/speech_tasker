@@ -1,7 +1,7 @@
 """ Create matrix file view for Speech Tasker. 
 
     Written by: Travis M. Moore
-    Last edited: May 17, 2024
+    Last edited: June 19, 2024
 """
 
 ###########
@@ -12,8 +12,6 @@ import logging
 import os
 import sys
 import tkinter as tk
-from idlelib.tooltip import Hovertip
-from tkinter import filedialog
 from tkinter import messagebox
 from tkinter import ttk
 
@@ -25,6 +23,8 @@ except KeyError:
 
 # Custom
 import tmpy
+import tmpy.functions.helper_funcs as hf
+from tmpy.tkgui import widgets as w
 
 ##########
 # Logger #
@@ -39,11 +39,20 @@ class CreateView(tk.Toplevel):
     """ View for setting session parameters. """
     def __init__(self, parent, settings, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
-        logger.debug("Initializing CreateView")
+        logger.info("Initializing CreateView")
 
         # Assign attributes
         self.parent = parent
         self.settings = settings
+
+        # Control variable dict
+        self._vars = {
+            'Subject': ('subject', tk.StringVar()),
+            'Condition': ('condition', tk.StringVar()),
+            'Presentations': ('repetitions', tk.IntVar()),
+            'Randomize': ('randomize', tk.IntVar()),
+            'Noise Level': ('noise_level_dB', tk.DoubleVar())
+        }
 
         # Window setup
         self.withdraw()
@@ -54,13 +63,10 @@ class CreateView(tk.Toplevel):
 
     def _draw_widgets(self):
         """ Populate the MainView with widgets. """
-        logger.debug("Drawing MainView widgets")
+        logger.info("Drawing MainView widgets")
         ##########
         # Frames #
         ##########
-        # Tooltip delay (ms)
-        tt_delay = 1000
-
         # Shared frame settings
         frame_options = {
             'padx': 10, 
@@ -69,7 +75,6 @@ class CreateView(tk.Toplevel):
             'ipady': 5,
             'sticky': 'nsew'
             }
-        widget_options = {'padx': 5, 'pady': (10, 0)}
 
         # Session info
         lfrm_session = ttk.Labelframe(self, text='Session Information')
@@ -77,273 +82,146 @@ class CreateView(tk.Toplevel):
 
         # Sentence options
         lfrm_sentence = ttk.Labelframe(self, text='Sentence Options')
-        lfrm_sentence.grid(row=10, column=5, rowspan=20, **frame_options)
+        lfrm_sentence.grid(row=10, column=5, **frame_options)
 
         # Noise options
         lfrm_noise = ttk.Labelframe(self, text='Noise Options')
-        #lfrm_noise.grid(row=15, column=5, **frame_options)
-        lfrm_noise.grid(row=15, column=20, **frame_options)
+        lfrm_noise.grid(row=5, column=10, **frame_options)
 
+        # AskPathGroup widgets
+        lfrm_path = ttk.Labelframe(self, text="File Locations")
+        lfrm_path.grid(row=10, column=10, **frame_options)
         # Audio file browser
-        lfrm_audiopath = ttk.Labelframe(self, text="Audio File Directory")
-        lfrm_audiopath.grid(
-            row=5,#20, 
-            column=20,#5, 
-            **frame_options, 
-            )
-
+        lfrm_audiopath = ttk.Labelframe(lfrm_path, text="Audio File Directory")
+        lfrm_audiopath.grid(row=5, column=5, **frame_options)
         # Sentence file browser
-        lfrm_sentencepath = ttk.Labelframe(self, text="Sentence CSV File")
-        lfrm_sentencepath.grid(
-            row=10,
-            column=20,
-            **frame_options, 
-            )
+        lfrm_sentencepath = ttk.Labelframe(lfrm_path, text="Sentence CSV File")
+        lfrm_sentencepath.grid(row=10, column=5, **frame_options)
 
         ###################
         # Session Widgets #
         ###################
         # Subject
-        lbl_sub = ttk.Label(lfrm_session, text="Subject:")
-        lbl_sub.grid(row=5, column=5, sticky='e', **widget_options)
-        sub_tt = Hovertip(
-            anchor_widget=lbl_sub,
-            text="A unique subject identifier."+
-                "\nCan be alpha, numeric, or both.",
-            hover_delay=tt_delay
-            )
-        ttk.Entry(lfrm_session, 
-            textvariable=self.settings['subject']
-            ).grid(row=5, column=10, sticky='w', **widget_options)
-
+        w.LabelInput(
+            lfrm_session,
+            label="Subject",
+            var=self._vars['Subject'][1], #self.settings['subject'],
+            input_class=w.RequiredEntry,
+            tool_tip="A unique subject identifier."
+                + "\nCan be alpha, numeric, or both."
+        ).grid(row=5, column=5, padx=5, pady=(5,0))
 
         # Condition
-        lbl_condition = ttk.Label(lfrm_session, text="Condition:")
-        lbl_condition.grid(row=10, column=5, sticky='e', **widget_options)
-        condition_tt = Hovertip(
-            anchor_widget=lbl_condition,
-            text="A unique condition name.\nCan be alpha, numeric, or both." +
-                "\nSeparate words with underscores.",
-            hover_delay=tt_delay
-            )
-        ttk.Entry(
-            lfrm_session, 
-            textvariable=self.settings['condition']
-            ).grid(row=10, column=10, sticky='w', **widget_options)
-        
+        w.LabelInput(
+            lfrm_session,
+            label="Condition",
+            var=self._vars['Condition'][1], #self.settings['condition'],
+            input_class=w.RequiredEntry,
+            tool_tip="A unique condition name."
+                + "\nCan be alpha, numeric, or both."
+                + "\nSeparate words with underscores."
+        ).grid(row=5, column=10, padx=5, pady=(5,0))
+
         ####################
         # Sentence Widgets #
         ####################
         # Lists
-        lbl_lists = ttk.Label(
+        w.LabelInput(
             lfrm_sentence,
-            text="List(s):",
-            )
-        lbl_lists.grid(
-            row=5,
-            column=5,
-            sticky='e',
-            **widget_options
-            )
-        lists_tt = Hovertip(
-            anchor_widget=lbl_lists,
-            text="The list numbers to include in the session." +
-                "\nSeparate multiple values with a comma and space: 1, 2, 3",
-            hover_delay=tt_delay
-            )
-        ttk.Entry(
-            lfrm_sentence,
-            textvariable=self.settings['sentence_lists']).grid(
-                row=5, column=10, sticky='ew', **widget_options)
-        
+            label="List(s)",
+            var=self.settings['sentence_lists'],
+            input_class=w.ListEntry,
+            tool_tip="The list numbers to include in the session." +
+                "\nSeparate multiple values with a comma and space: 1, 2, 3"
+        ).grid(row=5, column=5, padx=5, pady=(5,0))
 
         # Sentence level(s)
-        lbl_sentence_level = ttk.Label(lfrm_sentence, text="Level(s):")
-        lbl_sentence_level.grid(
-            row=10, 
-            column=5, 
-            sticky='e', 
-            **widget_options
-            )
-        sentence_level_tt = Hovertip(
-            anchor_widget=lbl_sentence_level,
-            text="A single starting presentation level for the sentences.",
-            hover_delay=tt_delay
-            )
-        ttk.Entry(
-            lfrm_sentence, 
-            textvariable=self.settings['sentence_levels']).grid(
-                row=10, column=10, sticky='w', **widget_options)
-
+        w.LabelInput(
+            lfrm_sentence,
+            label="Level(s)",
+            var=self.settings['sentence_levels'],
+            input_class=w.ListEntry,
+            tool_tip="Either a single level for all lists, or multiple " +
+                "levels (must be one per list)." +
+                "\nSeparate multiple values with a comma and space: 1, 2, 3"
+        ).grid(row=5, column=10, padx=5, pady=(5,0))
 
         # Sentence speaker(s)
-        lbl_sentence_speakers = ttk.Label(lfrm_sentence, text="Speaker(s):")
-        lbl_sentence_speakers.grid(
-            row=15,
-            column=5, 
-            sticky='e', 
-            **widget_options
-            )
-        sentence_speakers_tt = Hovertip(
-            anchor_widget=lbl_sentence_speakers,
-            text="Speakers to use for presenting sentences." +
-                "\nSpeakers will be randomly assigned.",
-            hover_delay=tt_delay
-            )
-        ttk.Entry(lfrm_sentence,
-            textvariable=self.settings['sentence_speakers']
-            ).grid(row=15, column=10, sticky='w', **widget_options)
-        
+        w.LabelInput(
+            lfrm_sentence,
+            label="Speaker(s)",
+            var=self.settings['sentence_speakers'],
+            input_class=w.ListEntry,
+            tool_tip="Either a single speaker for all lists, or a list " +
+                "of multiple speakers (must be one per list)." +
+                "\nSeparate multiple values with a comma and space: 1, 2, 3"
+        ).grid(row=10, column=5, padx=5, pady=(5,0))
 
         # Number of sentences per list
-        lbl_sentences_per_list = ttk.Label(
+        w.LabelInput(
             lfrm_sentence,
-            text="Sentences per List:",
-            takefocus=0
-            )
-        lbl_sentences_per_list.grid(
-            row=20,
-            column=5,
-            sticky='e',
-            **widget_options
-            )
-        lbl_sentences_per_list_tt = Hovertip(
-            anchor_widget=lbl_lists,
-            text="The number of sentences to present from each list.",
-            hover_delay=tt_delay
-            )
-        ttk.Entry(
-            lfrm_sentence,
-            width=5,
-            textvariable=self.settings['sentences_per_list']).grid(
-                row=20, column=10, sticky='w', **widget_options)
+            label="Sentences per List",
+            var=self.settings['sentences_per_list'],
+            input_class=w.RequiredEntry,
+            tool_tip="The number of sentences to present from each list."
+        ).grid(row=10, column=10, padx=5, pady=(5,0))
 
-
-        # Number of repetitions
-        lbl_repetitions = ttk.Label(
+        # Presentations
+        w.LabelInput(
             lfrm_sentence,
-            text="Repetitions:",
-            takefocus=0
-            )
-        lbl_repetitions.grid(
-            row=25,
-            column=5,
-            sticky='e',
-            **widget_options
-            )
-        lbl_repetitions_tt = Hovertip(
-            anchor_widget=lbl_repetitions,
-            text="The number of times to repeat each stimulus."\
-                +"\nFor no repetitions enter '1'.",
-            hover_delay=tt_delay
-            )
-        ttk.Entry(
-            lfrm_sentence,
-            width=5,
-            textvariable=self.settings['repetitions']).grid(
-                row=25, column=10, sticky='w', **widget_options)
-
+            label="Presentations",
+            var=self.settings['repetitions'],
+            input_class=w.RequiredEntry,
+            tool_tip="Number of times to present all trials."
+        ).grid(row=15, column=5, padx=5, pady=(5,0))
 
         # Randomize
-        check_random = ttk.Checkbutton(
-            lfrm_sentence, 
-            text="Randomize",
-            takefocus=0, 
-            variable=self.settings['randomize']
-            )
-        check_random.grid(
-            row=30, 
-            column=5,  
-            sticky='e',
-            **widget_options
-            )
+        w.LabelInput(
+            lfrm_sentence,
+            label="Randomize",
+            var=self.settings['randomize'],
+            input_class=ttk.Checkbutton,
+            input_args={'takefocus': 0},
+            tool_tip="Randomize trials in provided matrix file."
+        ).grid(row=15, column=10, padx=5, pady=(5,0), sticky='n')
 
         #################
         # Noise Widgets #
         #################
         # Noise level
-        lbl_noise_level = ttk.Label(lfrm_noise, text="Level:")
-        lbl_noise_level.grid(row=5, column=5, sticky='e', **widget_options)
-        noise_level_tt = Hovertip(
-            anchor_widget=lbl_noise_level,
-            text="A single presentation level for the noise.",
-            hover_delay=tt_delay
-            )
-        ttk.Entry(
-            lfrm_noise, 
-            width=7,
-            textvariable=self.settings['noise_level_dB']
-            ).grid(row=5, column=10, sticky='w', **widget_options)
+        w.LabelInput(
+            lfrm_noise,
+            label="Level",
+            var=self.settings['noise_level_dB'],
+            input_class=w.RequiredEntry,
+            tool_tip="Level of the noise."
+        ).grid(row=5, column=5, padx=5, pady=(5,0), sticky='n')
 
-        ###################
-        # Audio Directory #
-        ###################
-        # Descriptive label
-        ttk.Label(lfrm_audiopath, text="Path:").grid(
-            row=5, column=5, sticky='e', **widget_options)
+        #####################
+        # File Path Widgets #
+        #####################
+        # Audio files directory
+        w.AskPathGroup(
+            parent=lfrm_audiopath,
+            var=self.settings['import_audio_path'],
+            title_args={'text': 'Audio Files'},
+            type='dir',
+            tool_tip="Path to folder with audio files."
+        ).grid(row=5, column=5)
 
-        # Create textvariable
-        self.audio_var = tk.StringVar()
+        # Matrix file path
+        w.AskPathGroup(
+            parent=lfrm_sentencepath,
+            var=self.settings['sentence_file_path'],
+            title_args={'text': 'Sentence File'},
+            type='file',
+            tool_tip="Path to CSV file containing sentences."
+        ).grid(row=10, column=5)
 
-        # Fit path to label
-        self._shorten_path(
-            full_path=self.settings['import_audio_path'].get(),
-            num_chars=45, 
-            label_var=self.audio_var
-            )
-
-        # Audio directory label
-        ttk.Label(
-            lfrm_audiopath, 
-            textvariable=self.audio_var, 
-            borderwidth=2, 
-            relief="solid", 
-            width=40
-            ).grid(row=5, column=10, sticky='w', **widget_options)
-        ttk.Button(
-            lfrm_audiopath, 
-            text="Browse", 
-            command=self._get_audio_directory,
-            ).grid(row=10, column=10, sticky='w', **widget_options)
-
-        ######################
-        # Sentence Directory #
-        ######################
-        # Path label
-        ttk.Label(lfrm_sentencepath, text="Path:").grid(
-            row=5, column=5, sticky='e', **widget_options)
-
-        # Create textvariable
-        self.sentence_var = tk.StringVar()
-
-        # Fit path to label
-        self._shorten_path(
-            full_path=self.settings['sentence_file_path'].get(),
-            num_chars=45, 
-            label_var=self.sentence_var
-            )
-
-        # Sentence directory label
-        ttk.Label(
-            lfrm_sentencepath, 
-            textvariable=self.sentence_var, 
-            borderwidth=2, 
-            relief="solid", 
-            width=40
-            ).grid(row=5, column=10, sticky='w', **widget_options)
-        ttk.Button(
-            lfrm_sentencepath, 
-            text="Browse", 
-            command=self._get_sentence_directory,
-            ).grid(row=10, column=10, sticky='w', **widget_options)
-
-
-        # Submit button
-        btn_submit = ttk.Button(
-            self, 
-            text="Submit", 
-            command=self._on_submit
-            )
+        #################
+        # Submit button #
+        #################
+        btn_submit = ttk.Button(self, text="Submit", command=self._on_submit)
         btn_submit.grid(row=30, column=5, columnspan=20, pady=(0, 10))
 
         # Center CreateView over root
@@ -352,61 +230,23 @@ class CreateView(tk.Toplevel):
     #############
     # Functions #
     #############
-    def _shorten_path(self, full_path, num_chars, label_var=None):
-        # Truncate path
-        short_path = tmpy.helper_funcs.truncate_path(
-            full_path=full_path,
-            num_chars=num_chars
-        )
-        if label_var:
-            # Update label value with truncated path
-            label_var.set(short_path)
-
-
-    def _get_audio_directory(self):
-        """ Get audio files directory from user via file browser. """
-        # Get directory from user
-        self.settings['import_audio_path'].set(
-            filedialog.askdirectory(title="Audio File Directory")
-        )
-        # Fit path length to label
-        self._shorten_path(
-            full_path=self.settings['import_audio_path'].get(),
-            num_chars=45,
-            label_var=self.audio_var
-        )
-
-
-    def _get_sentence_directory(self):
-        """ Get sentence CSV file from user via file browser. """
-        # Get file
-        self.settings['sentence_file_path'].set(
-            filedialog.askopenfilename(title="Sentence CSV File")
-        )
-        # Fit path length to label
-        self._shorten_path(
-            full_path=self.settings['sentence_file_path'].get(),
-            num_chars=45,
-            label_var=self.sentence_var
-        )
-
-
     def _chk_lengths(self):
         """ Validate the number of entered lists and presentations levels.
-            If an invalid number exists, display an error message and return 
-            invalid flag.
+        If an invalid number exists, display an error message and return 
+        invalid flag.
         """
         lists = self.settings['sentence_lists'].get()
-        lists = tmpy.functions.helper_funcs.string_to_list(lists, 'int')
+        lists = hf.string_to_list(lists, 'int')
 
         levels = self.settings['sentence_levels'].get()
-        levels = tmpy.functions.helper_funcs.string_to_list(levels, 'int')
+        levels = hf.string_to_list(levels, 'float')
 
         if (len(levels) != len(lists)) and (len(levels) != 1):
             messagebox.showerror(
                 title="Invalid Parameters",
                 message="Invalid number of levels!",
-                detail="Either provide a single level, or an equal number of levels and lists."
+                detail="Either provide a single level, or an equal " +
+                    "number of levels and lists."
             )
             return False
         else:
@@ -415,15 +255,26 @@ class CreateView(tk.Toplevel):
 
     def _on_submit(self):
         """ Send submit event to controller and close window. """
+        # Validate form
+        errors = tmpy.functions.tkgui_funcs.get_errors(self.settings)
+        if errors:
+            messagebox.showerror(
+                title="Invalid Entry",
+                message="Unable to save form!",
+                detail="Error in fields:\n{}"
+                .format('\n'.join(errors.keys()))
+            )
+            return
         # Validate number of lists and levels
         if not self._chk_lengths():
             return
-
-        logger.debug("Sending 'SUBMIT' event to controller")
+        logger.info("Sending 'SUBMIT' event to %s", self.parent.REF)
         self.parent.event_generate('<<CreateViewSubmit>>')
-        logger.debug("Destroying CreateView instance")
+        logger.info("Destroying CreateView instance")
         self.destroy()
 
-
+################
+# Module Guard #
+################
 if __name__ == "__main__":
     pass

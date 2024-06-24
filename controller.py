@@ -20,6 +20,7 @@ import logging.handlers
 import os
 import sys
 import tkinter as tk
+from tkinter import font
 import webbrowser
 from pathlib import Path
 from tkinter import messagebox
@@ -56,7 +57,7 @@ logger = logging.getLogger(__name__)
 class Splash(tk.Toplevel):
     def __init__(self, parent, text):
         tk.Toplevel.__init__(self, parent)
-        #logger.debug("Initializing splash screen")
+        #logger.info("Initializing splash screen")
         self.withdraw()
         self.title("Please wait")
         self.geometry("300x200")
@@ -94,6 +95,7 @@ class Application(tk.Tk):
         #############
         # Constants #
         #############
+        self.REF = __name__
         self.NAME = 'Speech Tasker'
         self.VERSION = '0.1.2'
         self.EDITED = 'June 05, 2024'
@@ -107,6 +109,18 @@ class Application(tk.Tk):
             file=tkgui.shared_assets.images.LOGO_FULL_PNG
             )
         self.iconphoto(True, self.taskbar_icon)
+
+        # Update default font
+        default_font = font.nametofont("TkDefaultFont")
+        default_font.configure(size=12)
+        self.option_add("*Font", default_font)
+
+        # Custom styles
+        from tkinter import ttk
+        style = ttk.Style()
+        style.configure('Bold.TLabel', font=('TKDefaultFont', 12, 'bold'))
+        style.configure('Gray.TLabel', foreground="gray")
+        style.configure('TLabelframe.Label', foreground='blue', font=('TkDefaultFont', 13))
 
         ######################################
         # Initialize Models, Menus and Views #
@@ -124,11 +138,11 @@ class Application(tk.Tk):
         # (i.e., after settings model has been initialized)
         config = tmpy.functions.logging_funcs.setup_logging(self.NAME)
         logging.config.dictConfig(config)
-        logger.debug("Started custom logger")
+        logger.info("Started custom logger")
 
         # Default public attributes
         self.level_data = []
-        logger.debug("Setting controller 'start' flag to True")
+        logger.info("Setting controller 'start' flag to True")
         self.start_flag = True
 
         # Assign special quit function on window close
@@ -196,7 +210,7 @@ class Application(tk.Tk):
         }
 
         # Bind callbacks to sequences
-        logger.debug("Binding callbacks to controller")
+        logger.info("Binding callbacks to controller")
         for sequence, callback in event_callbacks.items():
             self.bind(sequence, callback)
 
@@ -264,7 +278,7 @@ class Application(tk.Tk):
     def center_window(self):
         """ Center the root window. """
         self.update_idletasks()
-        logger.debug("Centering root window after drawing widgets")
+        logger.info("Centering root window after drawing widgets")
         screen_width = self.winfo_screenwidth()
         screen_height = self.winfo_screenheight()
         size = tuple(int(_) for _ in self.geometry().split('+')[0].split('x'))
@@ -276,7 +290,7 @@ class Application(tk.Tk):
 
     # def center_window2(self, window):
     #     """ Center the root window. """
-    #     logger.debug("Centering root window after drawing widgets")
+    #     logger.info("Centering root window after drawing widgets")
     #     window.update_idletasks()
     #     screen_width = window.winfo_screenwidth()
     #     screen_height = window.winfo_screenheight()
@@ -289,7 +303,7 @@ class Application(tk.Tk):
 
     def _create_filename(self):
         """ Create file name and path. """
-        logger.debug("Creating file name with date stamp")
+        logger.info("Creating file name with date stamp")
         datestamp = datetime.datetime.now().strftime("%Y_%b_%d_%H%M")
         sub = self.settings['subject'].get()
         cond = self.settings['condition'].get()
@@ -307,23 +321,20 @@ class Application(tk.Tk):
     ###################
     def _import_mfile_view(self):
         """ Show import matrix file window. """
-        logger.debug("Calling settings view")
+        logger.info("Calling ImportView window")
         self.import_view = views.ImportView(self, self.settings)
         self.import_view.title("Import Matrix File")
 
-
     def _create_mfile_view(self):
         """ Show create matrix file window. """
-        logger.debug("Calling settings view")
+        logger.info("Calling CreateView window")
         self.create_view = views.CreateView(self, self.settings)
         self.create_view.title("Create Matrix File")
-
 
     def _prepare_trials(self):
         """ Import matrix file and organize trials. """
         # Get values from TkVars
         vals = tmpy.functions.tkgui_funcs.get_tk_values(self.settings)
-
         # Create dict of arguments
         pars = {
             'filepath': vals['matrix_file_path'],
@@ -331,33 +342,25 @@ class Application(tk.Tk):
             'randomize': vals['randomize'],
             'write': self.settings['write_matrix'].get()
         }
-
         # Create and write matrix CSV file
         mf = models.ImportSpeechTaskerMatrix(**pars)
         return mf.import_matrix_file()
 
-
     def on_start(self):
         """ Import matrix file and create TrialHandler. """
-        logger.debug("Start button pressed")
-
+        logger.info("Start button pressed")
         # Create filename with time stamp
         self.filename = self._create_filename()
-
         # Prepare trials
         trials = self._prepare_trials()
-
         # Create trial handler
         self.th = tmpy.handlers.TrialHandler(
             trials_df=trials
             )
-
         # Disable "Start" from File menu
         self.menu.file_menu.entryconfig('Start', state='disabled')
-
         # Enable user controls
         self.main_view.enable_user_controls(text="Next")
-
         # Start first trial
         self.on_next()
 
@@ -366,8 +369,7 @@ class Application(tk.Tk):
     #######################
     def _prepare_stimulus(self):
         """ Prepare audio for playback. """
-        logger.debug("Preparing audio for playback")
-
+        logger.info("Preparing audio for playback")
         # Calculate level based on SLM offset
         """ WARNING: Use a separate 'starting level' variable to avoid
             automatically using the last presented level on startup.
@@ -375,7 +377,6 @@ class Application(tk.Tk):
             Do NOT use: self.settings['desired_level_dB'].get()
         """
         self._calc_level(self.th.trial_info['level'])
-
         # Add directory to file name
         #self.settings['import_audio_path'].get(),
         stim = Path(os.path.join(
@@ -383,21 +384,17 @@ class Application(tk.Tk):
             self.th.trial_info['file']
             )
             )
-        
         return stim
-
 
     def play(self):
         """ Begin audio playback. """
         # Prepare audio for playback
         stim = self._prepare_stimulus()
-        
         # Present WGN
         self.present_audio(
             audio=stim,
             pres_level=self.settings['adjusted_level_dB'].get()
             )
-        
 
     def _end_of_task(self):
         """ Present message to user and destroy root. """
@@ -405,18 +402,16 @@ class Application(tk.Tk):
             title="Task Complete",
             message="You have completed the task!"
             )
-        logger.debug("Closing application")
+        logger.info("Closing application")
         self.quit()
 
-
     def _save(self, responses):
-        """ Save data to CSV, on a per trial basis, 
-            after scoring each trial. 
+        """ Save data to CSV, on a per trial basis, after scoring 
+        each trial. 
         """
         # Add directory to filename
         directory = 'Data'
         fullpath = os.path.join(directory, self.filename)
-
         # Define items to include in CSV
         order = ['trial',
                  'subject',
@@ -431,7 +426,6 @@ class Application(tk.Tk):
                  'total_words',
                  'num_correct'
                  ]
-
         try:
             self.dh.save_data(
                 filepath=fullpath,
@@ -455,11 +449,9 @@ class Application(tk.Tk):
             )
             return
         
-
     def on_next(self):
         """ Get and present next trial. """
-        logger.debug("Fetching next trial")
-
+        logger.info("Fetching next trial")
         # Score and save responses
         if not self.start_flag:
             # Score response
@@ -467,18 +459,14 @@ class Application(tk.Tk):
                 words=self.main_view.words_dict,
                 button_states=self.main_view.buttonstates_dict
             )
-
             # Write response to CSV
             self._save(scored_words)
-
             # Append trial level to level_data
             self.level_data.append(self.settings['desired_level_dB'].get())
-        
         if self.start_flag:
             # Set start flag to False after intitial trial
-            logger.debug("Setting 'start' flag to False")
+            logger.info("Setting 'start' flag to False")
             self.start_flag = False
-
         # Get next trial
         try:
             self.th.next()
@@ -486,23 +474,18 @@ class Application(tk.Tk):
             logger.warning("End of trials!")
             self._end_of_task()
             return
-        
         # Display sentence with checkbuttons
         self.main_view.update_main_label(
             sentence=self.th.trial_info['sentence'])
-
         # Update trial label
         self.main_view.update_info_labels(
             trial=self.th.trial_num,
             speaker=self.th.trial_info['speaker']
             )
-
         # Disable user controls during playback
         self.main_view.disable_user_controls(text="Presenting")
-
         # Present audio
         self.play()
-
         # Enable user controls after playback
         self.after(int(np.ceil(self.a.dur*1000)), 
                    lambda: self.main_view.enable_user_controls(text="Next")
@@ -550,13 +533,13 @@ class Application(tk.Tk):
         for key, data in self.settings_model.fields.items():
             vartype = vartypes.get(data['type'], tk.StringVar)
             self.settings[key] = vartype(value=data['value'])
-        logger.debug("Loaded settings model fields into " +
+        logger.info("Loaded settings model fields into " +
             "running settings dict")
 
 
     def _save_settings(self, *_):
         """ Save current runtime parameters to file. """
-        logger.debug("Calling settings model set and save funcs")
+        logger.info("Calling settings model set and save funcs")
         for key, variable in self.settings.items():
             self.settings_model.set(key, variable.get())
             self.settings_model.save()
@@ -566,13 +549,13 @@ class Application(tk.Tk):
     ########################
     def _show_audio_dialog(self):
         """ Show audio settings dialog. """
-        logger.debug("Calling audio device window")
+        logger.info("Calling audio device window")
         tkgui.views.AudioView(self, self.settings)
 
 
     def _show_calibration_dialog(self):
         """ Display the calibration dialog window. """
-        logger.debug("Calling calibration window")
+        logger.info("Calling calibration window")
         tkgui.views.CalibrationView(self, self.settings)
 
     ################################
@@ -580,7 +563,7 @@ class Application(tk.Tk):
     ################################
     def play_calibration_file(self):
         """ Load calibration file and present. """
-        logger.debug("Play calibration file called")
+        logger.info("Play calibration file called")
         # Get calibration file
         try:
             self.calibration_model.get_cal_file()
@@ -618,7 +601,7 @@ class Application(tk.Tk):
     #######################
     def _show_help(self):
         """ Create html help file and display in default browser. """
-        logger.debug("Calling README file (will open in browser)")
+        logger.info("Calling README file (will open in browser)")
         # Read markdown file and convert to html
         with open(app_assets.README.README_MD, 'r') as f:
             text = f.read()
@@ -634,7 +617,7 @@ class Application(tk.Tk):
 
     def _show_changelog(self):
         """ Create html CHANGELOG file and display in default browser. """
-        logger.debug("Calling CHANGELOG file (will open in browser)")
+        logger.info("Calling CHANGELOG file (will open in browser)")
         # Read markdown file and convert to html
         with open(app_assets.CHANGELOG.CHANGELOG_MD, 'r') as f:
             text = f.read()
@@ -672,14 +655,22 @@ class Application(tk.Tk):
             raise
 
 
+    # def _format_routing(self, routing):
+    #     """ Convert space-separated string to list of ints
+    #         for speaker routing.
+    #     """
+    #     logger.info("Formatting channel routing string as list")
+    #     routing = routing.split()
+    #     routing = [int(x) for x in routing]
+    #     return routing
+
+
     def _format_routing(self, routing):
-        """ Convert space-separated string to list of ints
-            for speaker routing.
+        """ Convert string of ", " separated items to list of ints 
+        for speaker routing.
         """
-        logger.debug("Formatting channel routing string as list")
-        routing = routing.split()
-        routing = [int(x) for x in routing]
-        return routing
+        logger.info("Formatting channel routing")
+        return helper_funcs.string_to_list(routing, 'int')
     
 
     def _play(self, pres_level):
@@ -757,13 +748,15 @@ class Application(tk.Tk):
 
     def stop_audio(self):
         """ Stop audio playback. """
-        logger.debug("User stopped audio playback")
+        logger.info("User stopped audio playback")
         try:
             self.a.stop()
         except AttributeError:
-            logger.debug("Stop called, but there is no audio object!")
+            logger.info("Stop called, but there is no audio object!")
 
-
+################
+# Module Guard #
+################
 if __name__ == "__main__":
     app = Application()
     app.mainloop()

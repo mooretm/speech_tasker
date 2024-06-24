@@ -10,7 +10,6 @@
 # Standard library
 import logging
 import tkinter as tk
-from tkinter import font
 from tkinter import ttk
 
 ##########
@@ -45,23 +44,13 @@ class MainView(ttk.Frame):
         ##########
         # Styles #
         ##########
-        self.myFont = font.nametofont('TkDefaultFont').configure(size=12)
-        options = {'padx':10, 'pady':10}
 
-        style = ttk.Style()
-        style.configure('Start.TButton', 
-            font=('TkDefaultFont', 10, 'bold'), 
-            foreground='green',
-            background='black')
-
-        style.configure('Repeat.TButton', 
-            font=('TkDefaultFont', 10, 'bold'), 
-            foreground='black',
-            background='black')
 
         ##########
         # Frames #
         ##########
+        options = {'padx':10, 'pady':10}
+
         # Main content frame
         frm_main = ttk.Frame(self)
         frm_main.grid(column=5, row=5, sticky='nsew')
@@ -116,7 +105,6 @@ class MainView(ttk.Frame):
         ttk.Label(self.frm_params, text="Speaker: "
                   ).grid(row=15, column=5, sticky='w')
         self.speaker_var = tk.IntVar(value="")
-        #ttk.Label(self.frm_params, textvariable=self.settings['channel_routing']
         ttk.Label(self.frm_params, textvariable=self.speaker_var
                   ).grid(row=15, column=10, sticky='e')
          # List number(s)
@@ -174,7 +162,7 @@ class MainView(ttk.Frame):
     #############
     def _reset(self):
         """ Destroy all labels and checkbuttons in main label. 
-            Reset all dicts to empty.
+        Reset all dicts to empty.
         """
         # Destroy labels
         for key in self.words_dict.keys():
@@ -192,7 +180,7 @@ class MainView(ttk.Frame):
 
     def update_main_label(self, sentence):
         """ Update the main label to display the written sentence
-            with checkbuttons below key words.
+        with checkbuttons below key words.
         """
         # Clear main label
         self._reset()
@@ -256,3 +244,9 @@ class MainView(ttk.Frame):
         """ Repeat the current sentence. """
         logger.debug("Sending REPEAT event to controller")
         self.event_generate('<<MainRepeat>>')
+
+################
+# Module Guard #
+################
+if __name__ == '__main__':
+    pass
