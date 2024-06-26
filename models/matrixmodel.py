@@ -1,7 +1,7 @@
 """ Classes for handling matrix files for specific apps. 
 
     Written by: Travis M. Moore
-    Last edited: May 22, 2024
+    Last edited: June 24, 2024
 """
 
 ###########
@@ -12,16 +12,19 @@ import logging
 import os
 import sys
 
-# Custom
+# Add custom path
 try:
     sys.path.append(os.environ['TMPY'])
 except KeyError:
     sys.path.append('C:\\Users\\MooTra\\Code\\Python')
+
+# Custom
 from tmpy.handlers import MatrixFile
 
 ##########
 # Logger #
 ##########
+# Create new logger
 logger = logging.getLogger(__name__)
 
 ############################
@@ -39,7 +42,7 @@ class ImportSpeechTaskerMatrix(MatrixFile):
             # Import matrix file
             matrix_df = self.import_file(self.kwargs['filepath'])
             # Repeat trials
-            repeated = self.repeat_trials(matrix_df, self.kwargs['repetitions'])
+            repeated = self.repeat_trials(matrix_df, self.kwargs['presentations'])
             # Randomize trials
             if self.kwargs['randomize'] == 1:
                 randomized = self.randomize(repeated)
@@ -77,7 +80,7 @@ class CreateSpeechTaskerMatrix(MatrixFile):
             # Add speaker column
             added_speakers = self.assign_values(added_levels, self.kwargs['speakers'], 'speaker')
             # Repeat trials
-            repeated = self.repeat_trials(added_speakers, self.kwargs['repetitions'])
+            repeated = self.repeat_trials(added_speakers, self.kwargs['presentations'])
             # Randomize trials
             if self.kwargs['randomize'] == 1:
                 randomized = self.randomize(repeated)
@@ -91,7 +94,9 @@ class CreateSpeechTaskerMatrix(MatrixFile):
         except TypeError as e:
             logger.error(e)
 
-
+################
+# Module Guard #
+################
 if __name__ == "__main__":
     pass
     # _path = r'C:\Users\MooTra\Code\Python\automated_hint\stimuli\sentences\matrix_HINT.csv'

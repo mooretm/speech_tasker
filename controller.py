@@ -1,12 +1,12 @@
 """ Speech Tasker. 
 
-    A flexible app for presenting a number of standardized
-    speech tests (e.g., HINT). The Speech Tasker can either
-    import a matrix file or create one based on provided
-    speech stimuli.  
+A flexible app for presenting a number of standardized
+speech tests (e.g., HINT). The Speech Tasker can either
+import a matrix file or create one based on provided
+speech stimuli.  
 
-    Written by: Travis M. Moore
-    Created: May 15, 2024
+Written by: Travis M. Moore
+Created: May 15, 2024
 """
 
 ###########
@@ -66,7 +66,6 @@ class Splash(tk.Toplevel):
         self.center_splashscreen()
         self.update()
         
-
     def center_splashscreen(self):
         """ Center the splash screen. """
         self.update_idletasks()
@@ -90,19 +89,18 @@ class Application(tk.Tk):
 
         #splash_screen = Splash(parent=self, text="Loading Automated HINT")
 
-        self.withdraw() # Hide root window during setup
-
         #############
         # Constants #
         #############
         self.REF = __name__
         self.NAME = 'Speech Tasker'
         self.VERSION = '0.1.2'
-        self.EDITED = 'June 05, 2024'
+        self.EDITED = 'June 25, 2024'
 
         ################
-        # Window setup #
+        # Window Setup #
         ################
+        self.withdraw()
         self.resizable(False, False)
         self.title(self.NAME)
         self.taskbar_icon = tk.PhotoImage(
@@ -183,7 +181,7 @@ class Application(tk.Tk):
             '<<CreateViewSubmit>>': lambda _: self._create_mfile(),
 
             # ImportView window
-            '<<ImportViewSubmit>>': lambda _: self._save_settings(),
+            '<<ImportViewSubmit>>': lambda _: self._save_settings(), #self._prepare_trials(),
 
             # Tools menu
             '<<ToolsAudioSettings>>': lambda _: self._show_audio_dialog(),
@@ -192,9 +190,6 @@ class Application(tk.Tk):
             # Help menu
             '<<HelpREADME>>': lambda _: self._show_help(),
             '<<HelpChangelog>>': lambda _: self._show_changelog(),
-
-            # Settings window
-            '<<SettingsSubmit>>': lambda _: self._save_settings(),
 
             # Calibration window
             '<<CalPlay>>': lambda _: self.play_calibration_file(),
@@ -287,7 +282,6 @@ class Application(tk.Tk):
         self.geometry("+%d+%d" % (x, y))
         self.deiconify()
 
-
     # def center_window2(self, window):
     #     """ Center the root window. """
     #     logger.info("Centering root window after drawing widgets")
@@ -300,16 +294,14 @@ class Application(tk.Tk):
     #     window.geometry("+%d+%d" % (x, y))
     #     window.deiconify()
 
-
     def _create_filename(self):
         """ Create file name and path. """
         logger.info("Creating file name with date stamp")
         datestamp = datetime.datetime.now().strftime("%Y_%b_%d_%H%M")
-        sub = self.settings['subject'].get()
-        cond = self.settings['condition'].get()
+        sub = self.settings['Subject'].get()
+        cond = self.settings['Condition'].get()
         filename = '_'.join([sub, cond, datestamp, ".csv"])
         return filename
-
 
     def _quit(self):
         """ Exit the application. """
@@ -338,12 +330,17 @@ class Application(tk.Tk):
         # Create dict of arguments
         pars = {
             'filepath': vals['matrix_file_path'],
-            'repetitions': vals['repetitions'],
-            'randomize': vals['randomize'],
+            'presentations': vals['Presentations'],
+            'randomize': vals['Randomize'],
             'write': self.settings['write_matrix'].get()
         }
         # Create and write matrix CSV file
         mf = models.ImportSpeechTaskerMatrix(**pars)
+        
+        
+        #self._save_settings()
+        
+        
         return mf.import_matrix_file()
 
     def on_start(self):
@@ -378,12 +375,11 @@ class Application(tk.Tk):
         """
         self._calc_level(self.th.trial_info['level'])
         # Add directory to file name
-        #self.settings['import_audio_path'].get(),
         stim = Path(os.path.join(
             self.settings['import_audio_path'].get(),
             self.th.trial_info['file']
             )
-            )
+        )
         return stim
 
     def play(self):
@@ -394,14 +390,14 @@ class Application(tk.Tk):
         self.present_audio(
             audio=stim,
             pres_level=self.settings['adjusted_level_dB'].get()
-            )
+        )
 
     def _end_of_task(self):
         """ Present message to user and destroy root. """
         messagebox.showinfo(
             title="Task Complete",
             message="You have completed the task!"
-            )
+        )
         logger.info("Closing application")
         self.quit()
 
@@ -414,8 +410,8 @@ class Application(tk.Tk):
         fullpath = os.path.join(directory, self.filename)
         # Define items to include in CSV
         order = ['trial',
-                 'subject',
-                 'condition',
+                 'Subject',
+                 'Condition',
                  'file',
                  'list_num',
                  'sentence_num',
@@ -481,7 +477,7 @@ class Application(tk.Tk):
         self.main_view.update_info_labels(
             trial=self.th.trial_num,
             speaker=self.th.trial_info['speaker']
-            )
+        )
         # Disable user controls during playback
         self.main_view.disable_user_controls(text="Presenting")
         # Present audio
@@ -489,7 +485,31 @@ class Application(tk.Tk):
         # Enable user controls after playback
         self.after(int(np.ceil(self.a.dur*1000)), 
                    lambda: self.main_view.enable_user_controls(text="Next")
-                   )
+        )
+
+    ########################
+    # ImportView Functions #
+    ########################
+    def _import_mfile(self):
+        """ Create a matrix file and write to CSV. """
+        # Get values from TkVars
+        vals = tmpy.functions.tkgui_funcs.get_tk_values(self.settings)
+        # Create dict of arguments
+        pars = {
+            'filepath': vals['sentence_file_path'],
+            'lists': helper_funcs.string_to_list(vals['Sentence Lists'], 'int'),
+            'sentences_per_list': vals['Sentences per List'],
+            'levels': helper_funcs.string_to_list(vals['Sentence Levels'], 'float'),
+            'speakers': helper_funcs.string_to_list(vals['Sentence Speakers'], 'int'),
+            'presentations': vals['Presentations'],
+            'randomize': vals['Randomize'],
+            'write': True
+        }
+        # Create and write matrix CSV file
+        mf = models.CreateSpeechTaskerMatrix(**pars)
+        mf.create_matrix_file()
+        # Save settings (controller does not call save for CreateView)
+        self._save_settings()
 
     ########################
     # CreateView Functions #
@@ -498,22 +518,22 @@ class Application(tk.Tk):
         """ Create a matrix file and write to CSV. """
         # Get values from TkVars
         vals = tmpy.functions.tkgui_funcs.get_tk_values(self.settings)
-
         # Create dict of arguments
         pars = {
             'filepath': vals['sentence_file_path'],
-            'lists': helper_funcs.string_to_list(vals['sentence_lists'], 'int'),
-            'sentences_per_list': vals['sentences_per_list'],
-            'levels': helper_funcs.string_to_list(vals['sentence_levels'], 'int'),
-            'speakers': helper_funcs.string_to_list(vals['sentence_speakers'], 'int'),
-            'repetitions': vals['repetitions'],
-            'randomize': vals['randomize'],
+            'lists': helper_funcs.string_to_list(vals['Sentence Lists'], 'int'),
+            'sentences_per_list': vals['Sentences per List'],
+            'levels': helper_funcs.string_to_list(vals['Sentence Levels'], 'float'),
+            'speakers': helper_funcs.string_to_list(vals['Sentence Speakers'], 'int'),
+            'presentations': vals['Presentations'],
+            'randomize': vals['Randomize'],
             'write': True
         }
-
         # Create and write matrix CSV file
         mf = models.CreateSpeechTaskerMatrix(**pars)
         mf.create_matrix_file()
+        # Save settings (controller does not call save for CreateView)
+        self._save_settings()
 
     ###########################
     # Settings View Functions #
@@ -527,7 +547,6 @@ class Application(tk.Tk):
         'int': tk.IntVar,
         'float': tk.DoubleVar
         }
-
         # Create runtime dict from settingsmodel fields
         self.settings = dict()
         for key, data in self.settings_model.fields.items():
@@ -535,7 +554,6 @@ class Application(tk.Tk):
             self.settings[key] = vartype(value=data['value'])
         logger.info("Loaded settings model fields into " +
             "running settings dict")
-
 
     def _save_settings(self, *_):
         """ Save current runtime parameters to file. """
@@ -551,7 +569,6 @@ class Application(tk.Tk):
         """ Show audio settings dialog. """
         logger.info("Calling audio device window")
         tkgui.views.AudioView(self, self.settings)
-
 
     def _show_calibration_dialog(self):
         """ Display the calibration dialog window. """
@@ -580,14 +597,12 @@ class Application(tk.Tk):
             pres_level=self.settings['cal_level_dB'].get()
         )
 
-
     def _calc_offset(self):
         """ Calculate offset based on SLM reading. """
         # Calculate new presentation level
         self.calibration_model.calc_offset()
         # Save level - this must be called here!
         self._save_settings()
-
 
     def _calc_level(self, desired_spl):
         """ Calculate new dB FS level using slm_offset. """
@@ -606,14 +621,11 @@ class Application(tk.Tk):
         with open(app_assets.README.README_MD, 'r') as f:
             text = f.read()
             html = markdown.markdown(text)
-
         # Create html file for display
         with open(app_assets.README.README_HTML, 'w') as f:
             f.write(html)
-
         # Open README in default web browser
         webbrowser.open(app_assets.README.README_HTML)
-
 
     def _show_changelog(self):
         """ Create html CHANGELOG file and display in default browser. """
@@ -622,11 +634,9 @@ class Application(tk.Tk):
         with open(app_assets.CHANGELOG.CHANGELOG_MD, 'r') as f:
             text = f.read()
             html = markdown.markdown(text)
-
         # Create html file for display
         with open(app_assets.CHANGELOG.CHANGELOG_HTML, 'w') as f:
             f.write(html)
-
         # Open CHANGELOG in default web browser
         webbrowser.open(app_assets.CHANGELOG.CHANGELOG_HTML)
 
@@ -645,25 +655,13 @@ class Application(tk.Tk):
             messagebox.showerror(
                 title="File Not Found",
                 message="Cannot find the audio file!",
-                detail="Go to File>Session to specify a valid audio path."
+                detail="Please provide a valid audio path."
             )
-            #self._show_settings_view()
             return
         except tmpy.audio_handlers.InvalidAudioType:
             raise
         except tmpy.audio_handlers.MissingSamplingRate:
             raise
-
-
-    # def _format_routing(self, routing):
-    #     """ Convert space-separated string to list of ints
-    #         for speaker routing.
-    #     """
-    #     logger.info("Formatting channel routing string as list")
-    #     routing = routing.split()
-    #     routing = [int(x) for x in routing]
-    #     return routing
-
 
     def _format_routing(self, routing):
         """ Convert string of ", " separated items to list of ints 
@@ -672,7 +670,6 @@ class Application(tk.Tk):
         logger.info("Formatting channel routing")
         return helper_funcs.string_to_list(routing, 'int')
     
-
     def _play(self, pres_level):
         """ Format channel routing, present audio and catch exceptions. """
         # Get routing either from a trial handler or settings
@@ -720,7 +717,6 @@ class Application(tk.Tk):
             )
             self.a.plot_waveform("Clipped Waveform")
 
-
     def present_audio(self, audio, pres_level, **kwargs):
         # Load audio
         try:
@@ -744,7 +740,6 @@ class Application(tk.Tk):
 
         # Play audio
         self._play(pres_level)
-
 
     def stop_audio(self):
         """ Stop audio playback. """

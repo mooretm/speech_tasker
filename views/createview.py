@@ -1,7 +1,7 @@
 """ Create matrix file view for Speech Tasker. 
 
     Written by: Travis M. Moore
-    Last edited: June 19, 2024
+    Last edited: June 25, 2024
 """
 
 ###########
@@ -45,15 +45,6 @@ class CreateView(tk.Toplevel):
         self.parent = parent
         self.settings = settings
 
-        # Control variable dict
-        self._vars = {
-            'Subject': ('subject', tk.StringVar()),
-            'Condition': ('condition', tk.StringVar()),
-            'Presentations': ('repetitions', tk.IntVar()),
-            'Randomize': ('randomize', tk.IntVar()),
-            'Noise Level': ('noise_level_dB', tk.DoubleVar())
-        }
-
         # Window setup
         self.withdraw()
         self.resizable(False, False)
@@ -64,6 +55,7 @@ class CreateView(tk.Toplevel):
     def _draw_widgets(self):
         """ Populate the MainView with widgets. """
         logger.info("Drawing MainView widgets")
+
         ##########
         # Frames #
         ##########
@@ -105,7 +97,7 @@ class CreateView(tk.Toplevel):
         w.LabelInput(
             lfrm_session,
             label="Subject",
-            var=self._vars['Subject'][1], #self.settings['subject'],
+            var=self.settings['Subject'],
             input_class=w.RequiredEntry,
             tool_tip="A unique subject identifier."
                 + "\nCan be alpha, numeric, or both."
@@ -115,7 +107,7 @@ class CreateView(tk.Toplevel):
         w.LabelInput(
             lfrm_session,
             label="Condition",
-            var=self._vars['Condition'][1], #self.settings['condition'],
+            var=self.settings['Condition'],
             input_class=w.RequiredEntry,
             tool_tip="A unique condition name."
                 + "\nCan be alpha, numeric, or both."
@@ -129,7 +121,7 @@ class CreateView(tk.Toplevel):
         w.LabelInput(
             lfrm_sentence,
             label="List(s)",
-            var=self.settings['sentence_lists'],
+            var=self.settings['Sentence Lists'],
             input_class=w.ListEntry,
             tool_tip="The list numbers to include in the session." +
                 "\nSeparate multiple values with a comma and space: 1, 2, 3"
@@ -139,7 +131,7 @@ class CreateView(tk.Toplevel):
         w.LabelInput(
             lfrm_sentence,
             label="Level(s)",
-            var=self.settings['sentence_levels'],
+            var=self.settings['Sentence Levels'],
             input_class=w.ListEntry,
             tool_tip="Either a single level for all lists, or multiple " +
                 "levels (must be one per list)." +
@@ -150,7 +142,7 @@ class CreateView(tk.Toplevel):
         w.LabelInput(
             lfrm_sentence,
             label="Speaker(s)",
-            var=self.settings['sentence_speakers'],
+            var=self.settings['Sentence Speakers'],
             input_class=w.ListEntry,
             tool_tip="Either a single speaker for all lists, or a list " +
                 "of multiple speakers (must be one per list)." +
@@ -161,7 +153,7 @@ class CreateView(tk.Toplevel):
         w.LabelInput(
             lfrm_sentence,
             label="Sentences per List",
-            var=self.settings['sentences_per_list'],
+            var=self.settings['Sentences per List'],
             input_class=w.RequiredEntry,
             tool_tip="The number of sentences to present from each list."
         ).grid(row=10, column=10, padx=5, pady=(5,0))
@@ -170,7 +162,7 @@ class CreateView(tk.Toplevel):
         w.LabelInput(
             lfrm_sentence,
             label="Presentations",
-            var=self.settings['repetitions'],
+            var=self.settings['Presentations'],
             input_class=w.RequiredEntry,
             tool_tip="Number of times to present all trials."
         ).grid(row=15, column=5, padx=5, pady=(5,0))
@@ -179,7 +171,7 @@ class CreateView(tk.Toplevel):
         w.LabelInput(
             lfrm_sentence,
             label="Randomize",
-            var=self.settings['randomize'],
+            var=self.settings['Randomize'],
             input_class=ttk.Checkbutton,
             input_args={'takefocus': 0},
             tool_tip="Randomize trials in provided matrix file."
@@ -192,7 +184,7 @@ class CreateView(tk.Toplevel):
         w.LabelInput(
             lfrm_noise,
             label="Level",
-            var=self.settings['noise_level_dB'],
+            var=self.settings['Noise Level'],
             input_class=w.RequiredEntry,
             tool_tip="Level of the noise."
         ).grid(row=5, column=5, padx=5, pady=(5,0), sticky='n')
@@ -235,26 +227,32 @@ class CreateView(tk.Toplevel):
         If an invalid number exists, display an error message and return 
         invalid flag.
         """
-        lists = self.settings['sentence_lists'].get()
+        logger.info("Checking for valid number of lists, levels, and speakers.")
+        # Get variable values
+        # Lists
+        lists = self.settings['Sentence Lists'].get()
         lists = hf.string_to_list(lists, 'int')
-
-        levels = self.settings['sentence_levels'].get()
+        # Levels
+        levels = self.settings['Sentence Levels'].get()
         levels = hf.string_to_list(levels, 'float')
+        # Speakers
+        speakers = self.settings['Sentence Speakers'].get()
+        speakers = hf.string_to_list(speakers, 'int')
 
-        if (len(levels) != len(lists)) and (len(levels) != 1):
-            messagebox.showerror(
-                title="Invalid Parameters",
-                message="Invalid number of levels!",
-                detail="Either provide a single level, or an equal " +
-                    "number of levels and lists."
-            )
-            return False
-        else:
-            return True
-        
+        valid = True
+        # Lists vs levels
+        if not len(levels) == len(lists):
+            if not len(levels) == 1:
+                return False
+        # Lists vs speakers
+        if not len(speakers) == len(lists):
+            if not len(speakers) == 1:
+                return False
+        return valid
 
     def _on_submit(self):
         """ Send submit event to controller and close window. """
+        logger.info("SUBMIT button pressed.")
         # Validate form
         errors = tmpy.functions.tkgui_funcs.get_errors(self.settings)
         if errors:
@@ -265,8 +263,15 @@ class CreateView(tk.Toplevel):
                 .format('\n'.join(errors.keys()))
             )
             return
-        # Validate number of lists and levels
+        # Validate number of lists, levels and speakers
         if not self._chk_lengths():
+            messagebox.showerror(
+                title="Invalid Parameters",
+                message="Cannot assign entries to lists!",
+                detail="Levels and speakers must be either a single " 
+                    + "value, or multiple values equal to the number "
+                    + "of sentence lists."
+            )
             return
         logger.info("Sending 'SUBMIT' event to %s", self.parent.REF)
         self.parent.event_generate('<<CreateViewSubmit>>')

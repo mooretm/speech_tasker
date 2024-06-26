@@ -3,23 +3,23 @@
 # Define dictionary items
 fields = {
     # Session variables
-    'subject': {'type': 'str', 'value': '999'},
-    'condition': {'type': 'str', 'value': "test"},
+    'Subject': {'type': 'str', 'value': '999'},
+    'Condition': {'type': 'str', 'value': "test"},
     
     # Stimulus variables
-    'randomize': {'type': 'int', 'value': 0},
-    'repetitions': {'type': 'int', 'value': 1},
-    'sentence_lists': {'type': 'str', 'value': '1, 2'},
-    'sentences_per_list': {'type': 'int', 'value': 5},
+    'Randomize': {'type': 'int', 'value': 0},
+    'Presentations': {'type': 'int', 'value': 1},
+    'Sentence Lists': {'type': 'str', 'value': '1, 2'},
+    'Sentences per List': {'type': 'int', 'value': 5},
     'import_audio_path': {'type': 'str', 'value': "Please select a path"},
     'matrix_file_path': {'type': 'str', 'value': "Please select a path"},
     'sentence_file_path': {'type': 'str', 'value': 'Please select a file'},
     'write_matrix': {'type': 'int', 'value': 0},
 
     # Presentation variables
-    'sentence_levels': {'type': 'str', 'value': '70, 75'},
-    'noise_level_dB': {'type': 'float', 'value': 65},
-    'sentence_speakers': {'type': 'str', 'value': '1, 2, 3'},
+    'Sentence Levels': {'type': 'str', 'value': '70, 75'},
+    'Noise Level': {'type': 'float', 'value': 65},
+    'Sentence Speakers': {'type': 'str', 'value': '1, 2, 3'},
     
     # Internal level variables
     'adjusted_level_dB': {'type': 'float', 'value': -25.0},

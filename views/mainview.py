@@ -40,12 +40,7 @@ class MainView(ttk.Frame):
     def _draw_widgets(self):
         """ Draw widgets. """
         logger.debug("Drawing MainView widgets")
-
-        ##########
-        # Styles #
-        ##########
-
-
+        
         ##########
         # Frames #
         ##########
@@ -94,12 +89,12 @@ class MainView(ttk.Frame):
         # Subject
         ttk.Label(self.frm_params, text="Subject: "
                   ).grid(row=5, column=5, sticky='w')
-        ttk.Label(self.frm_params, textvariable=self.settings['subject']
+        ttk.Label(self.frm_params, textvariable=self.settings['Subject']
                   ).grid(row=5, column=10, sticky='e')
         # Condition
         ttk.Label(self.frm_params, text="Condition: "
                   ).grid(row=10, column=5, sticky='w')
-        ttk.Label(self.frm_params, textvariable=self.settings['condition']
+        ttk.Label(self.frm_params, textvariable=self.settings['Condition']
                   ).grid(row=10, column=10, sticky='e')
         # Speaker number
         ttk.Label(self.frm_params, text="Speaker: "
@@ -110,7 +105,7 @@ class MainView(ttk.Frame):
          # List number(s)
         ttk.Label(self.frm_params, text="List(s): "
                   ).grid(row=20, column=5, sticky='w')
-        ttk.Label(self.frm_params, textvariable=self.settings['sentence_lists']
+        ttk.Label(self.frm_params, textvariable=self.settings['Sentence Lists']
                   ).grid(row=20, column=10, sticky='e')
         # Level
         ttk.Label(self.frm_params, text="Level: "

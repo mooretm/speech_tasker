@@ -1,7 +1,7 @@
 """ Import matrix file view for Speech Tasker. 
 
     Written by: Travis M. Moore
-    Last edited: June 19, 2024
+    Last edited: June 24, 2024
 """
 
 ###########
@@ -38,29 +38,11 @@ class ImportView(tk.Toplevel):
     """ View for setting session parameters. """
     def __init__(self, parent, settings, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
-        logger.debug("Initializing ImportView")
+        logger.info("Initializing ImportView")
 
         # Assign attributes
         self.parent = parent
         self.settings = settings
-
-        """ This is getting silly. Maybe just rename control variables
-        as they should appear in error messages.
-
-        That still leaves the issue of updating variables when filling
-        out the form... But maybe those values aren't written to file?
-            Actually, is this really a problem? Might not be. 
-        """
-        # Control variable dict
-        self._vars = {
-            'Subject': ('subject', tk.StringVar(
-                value=self.settings['subject'].get()
-            )),
-            'Condition': ('condition', tk.StringVar()),
-            'Presentations': ('repetitions', tk.IntVar()),
-            'Randomize': ('randomize', tk.IntVar()),
-            'Noise Level': ('noise_level_dB', tk.DoubleVar())
-        }
         
         # Window setup
         self.withdraw()
@@ -71,7 +53,7 @@ class ImportView(tk.Toplevel):
 
     def _draw_widgets(self):
         """ Populate the MainView with widgets. """
-        logger.debug("Drawing MainView widgets")
+        logger.info("Drawing MainView widgets")
 
         ##########
         # Frames #
@@ -102,11 +84,9 @@ class ImportView(tk.Toplevel):
         # AskPathWidgets
         lfrm_path = ttk.Labelframe(self, text="File Locations")
         lfrm_path.grid(row=5, rowspan=16, column=10, **frame_options)
-
         # Audio file browser
         lfrm_audiopath = ttk.Labelframe(lfrm_path, text="Audio File Directory")
         lfrm_audiopath.grid(row=5, column=5, **frame_options)
-
         # Matrix file browser
         lfrm_matrixpath = ttk.Labelframe(lfrm_path, text='Matrix File Path')
         lfrm_matrixpath.grid(row=10, column=5, **frame_options)
@@ -118,7 +98,7 @@ class ImportView(tk.Toplevel):
         w.LabelInput(
             lfrm_session,
             label="Subject",
-            var=self._vars['Subject'][1], #self.settings['subject'],
+            var=self.settings['Subject'],
             input_class=w.RequiredEntry,
             tool_tip="A unique subject identifier."
                 + "\nCan be alpha, numeric, or both."
@@ -128,7 +108,7 @@ class ImportView(tk.Toplevel):
         w.LabelInput(
             lfrm_session,
             label="Condition",
-            var=self._vars['Condition'][1], #self.settings['condition'],
+            var=self.settings['Condition'],
             input_class=w.RequiredEntry,
             tool_tip="A unique condition name."
                 + "\nCan be alpha, numeric, or both."
@@ -142,17 +122,16 @@ class ImportView(tk.Toplevel):
         w.LabelInput(
             lfrm_stimulus,
             label="Presentations",
-            var=self._vars['Presentations'][1], #self.settings['repetitions'],
+            var=self.settings['Presentations'],
             input_class=w.RequiredEntry,
-            tool_tip="Number of times to present the trials in the "
-                + "matrix file."
+            tool_tip="Number of times to present all trials."
         ).grid(row=5, column=5, padx=5, pady=(5,0))
 
         # Randomize
         w.LabelInput(
             lfrm_stimulus,
             label="Randomize",
-            var=self._vars['Randomize'][1], #self.settings['randomize'],
+            var=self.settings['Randomize'],
             input_class=ttk.Checkbutton,
             input_args={'takefocus': 0},
             tool_tip="Randomize trials in provided matrix file."
@@ -165,7 +144,7 @@ class ImportView(tk.Toplevel):
         w.LabelInput(
             lfrm_noise,
             label="Level",
-            var=self._vars['Noise Level'][1], #self.settings['noise_level_dB'],
+            var=self.settings['Noise Level'],
             input_class=w.RequiredEntry,
             tool_tip="Level of the noise."
         ).grid(row=5, column=5, padx=5, pady=(5,0), sticky='n')
@@ -217,7 +196,7 @@ class ImportView(tk.Toplevel):
             self, 
             text="Submit", 
             command=self._on_submit
-            )
+        )
         btn_submit.grid(row=30, column=5, columnspan=20, pady=(0, 10))
 
         # Center ImportView over root
