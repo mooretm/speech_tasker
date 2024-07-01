@@ -154,7 +154,7 @@ class MainMenu(tk.Menu):
         )
         self.help_menu.add_command(
             label="Change Log...",
-            command=self._event('<<HelpChangelog>>'),
+            command=self._event('<<HelpCHANGELOG>>'),
             image=self.icons['help_changelog'],
             compound=tk.LEFT,
         )

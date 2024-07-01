@@ -1,7 +1,7 @@
 """ Create matrix file view for Speech Tasker. 
 
     Written by: Travis M. Moore
-    Last edited: June 25, 2024
+    Last edited: July 1, 2024
 """
 
 ###########
@@ -23,7 +23,6 @@ except KeyError:
 
 # Custom
 import tmpy
-import tmpy.functions.helper_funcs as hf
 from tmpy.tkgui import widgets as w
 
 ##########
@@ -44,6 +43,7 @@ class CreateView(tk.Toplevel):
         # Assign attributes
         self.parent = parent
         self.settings = settings
+        self.list_length_var = tk.IntVar()
 
         # Window setup
         self.withdraw()
@@ -51,11 +51,9 @@ class CreateView(tk.Toplevel):
         self.grab_set()
         self._draw_widgets()
 
-
     def _draw_widgets(self):
         """ Populate the MainView with widgets. """
         logger.info("Drawing MainView widgets")
-
         ##########
         # Frames #
         ##########
@@ -122,7 +120,10 @@ class CreateView(tk.Toplevel):
             lfrm_sentence,
             label="List(s)",
             var=self.settings['Sentence Lists'],
-            input_class=w.ListEntry,
+            input_class=w.BoundListEntry,
+            input_args={
+                'focus_update_var': self.list_length_var
+            },
             tool_tip="The list numbers to include in the session." +
                 "\nSeparate multiple values with a comma and space: 1, 2, 3"
         ).grid(row=5, column=5, padx=5, pady=(5,0))
@@ -132,7 +133,10 @@ class CreateView(tk.Toplevel):
             lfrm_sentence,
             label="Level(s)",
             var=self.settings['Sentence Levels'],
-            input_class=w.ListEntry,
+            input_class=w.BoundListEntry,
+            input_args={
+                'max_var': self.list_length_var
+            },
             tool_tip="Either a single level for all lists, or multiple " +
                 "levels (must be one per list)." +
                 "\nSeparate multiple values with a comma and space: 1, 2, 3"
@@ -143,7 +147,10 @@ class CreateView(tk.Toplevel):
             lfrm_sentence,
             label="Speaker(s)",
             var=self.settings['Sentence Speakers'],
-            input_class=w.ListEntry,
+            input_class=w.BoundListEntry,
+            input_args={
+                'max_var': self.list_length_var
+            },
             tool_tip="Either a single speaker for all lists, or a list " +
                 "of multiple speakers (must be one per list)." +
                 "\nSeparate multiple values with a comma and space: 1, 2, 3"
@@ -219,37 +226,9 @@ class CreateView(tk.Toplevel):
         # Center CreateView over root
         tmpy.functions.tkgui_funcs.center_window_over_parent(self)
 
-    #############
-    # Functions #
-    #############
-    def _chk_lengths(self):
-        """ Validate the number of entered lists and presentations levels.
-        If an invalid number exists, display an error message and return 
-        invalid flag.
-        """
-        logger.info("Checking for valid number of lists, levels, and speakers.")
-        # Get variable values
-        # Lists
-        lists = self.settings['Sentence Lists'].get()
-        lists = hf.string_to_list(lists, 'int')
-        # Levels
-        levels = self.settings['Sentence Levels'].get()
-        levels = hf.string_to_list(levels, 'float')
-        # Speakers
-        speakers = self.settings['Sentence Speakers'].get()
-        speakers = hf.string_to_list(speakers, 'int')
-
-        valid = True
-        # Lists vs levels
-        if not len(levels) == len(lists):
-            if not len(levels) == 1:
-                return False
-        # Lists vs speakers
-        if not len(speakers) == len(lists):
-            if not len(speakers) == 1:
-                return False
-        return valid
-
+    ###########
+    # Methods #
+    ###########
     def _on_submit(self):
         """ Send submit event to controller and close window. """
         logger.info("SUBMIT button pressed.")
@@ -261,16 +240,6 @@ class CreateView(tk.Toplevel):
                 message="Unable to save form!",
                 detail="Error in fields:\n{}"
                 .format('\n'.join(errors.keys()))
-            )
-            return
-        # Validate number of lists, levels and speakers
-        if not self._chk_lengths():
-            messagebox.showerror(
-                title="Invalid Parameters",
-                message="Cannot assign entries to lists!",
-                detail="Levels and speakers must be either a single " 
-                    + "value, or multiple values equal to the number "
-                    + "of sentence lists."
             )
             return
         logger.info("Sending 'SUBMIT' event to %s", self.parent.REF)

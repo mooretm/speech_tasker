@@ -1,7 +1,7 @@
 """ Import matrix file view for Speech Tasker. 
 
     Written by: Travis M. Moore
-    Last edited: June 24, 2024
+    Last edited: July 1, 2024
 """
 
 ###########
@@ -67,7 +67,7 @@ class ImportView(tk.Toplevel):
             'sticky': 'nsew'
             }
         # Shared widget options
-        widget_options = {'padx': 5, 'pady': (10, 0)}
+        widget_options = {'padx': 5, 'pady': (5, 0)}
         
         # Session info
         lfrm_session = ttk.Labelframe(self, text='Session Information')
@@ -102,7 +102,7 @@ class ImportView(tk.Toplevel):
             input_class=w.RequiredEntry,
             tool_tip="A unique subject identifier."
                 + "\nCan be alpha, numeric, or both."
-        ).grid(row=5, column=5, padx=5, pady=(5,0))
+        ).grid(row=5, column=5, **widget_options)
 
         # Condition
         w.LabelInput(
@@ -113,7 +113,7 @@ class ImportView(tk.Toplevel):
             tool_tip="A unique condition name."
                 + "\nCan be alpha, numeric, or both."
                 + "\nSeparate words with underscores."
-        ).grid(row=5, column=10, padx=5, pady=(5,0))
+        ).grid(row=5, column=10, **widget_options)
 
         ###########################
         # Stimulus Option Widgets #
@@ -125,7 +125,7 @@ class ImportView(tk.Toplevel):
             var=self.settings['Presentations'],
             input_class=w.RequiredEntry,
             tool_tip="Number of times to present all trials."
-        ).grid(row=5, column=5, padx=5, pady=(5,0))
+        ).grid(row=5, column=5, **widget_options)
 
         # Randomize
         w.LabelInput(
@@ -135,7 +135,7 @@ class ImportView(tk.Toplevel):
             input_class=ttk.Checkbutton,
             input_args={'takefocus': 0},
             tool_tip="Randomize trials in provided matrix file."
-        ).grid(row=5, column=10, padx=5, pady=(5,0), sticky='n')
+        ).grid(row=5, column=10, **widget_options, sticky='n')
 
         #################
         # Noise Widgets #
@@ -147,7 +147,7 @@ class ImportView(tk.Toplevel):
             var=self.settings['Noise Level'],
             input_class=w.RequiredEntry,
             tool_tip="Level of the noise."
-        ).grid(row=5, column=5, padx=5, pady=(5,0), sticky='n')
+        ).grid(row=5, column=5, **widget_options, sticky='n')
 
         #####################
         # File Path Widgets #
@@ -172,21 +172,20 @@ class ImportView(tk.Toplevel):
             tool_tip="Path to the matrix file."
         ).grid(row=5, column=5)
 
-        # Save matrix file checkbutton
-        ttk.Checkbutton(
-            lfrm_matrixpath, 
-            text="Write matrix file to CSV",
-            variable=self.settings['write_matrix'],
-            onvalue=1,
-            offvalue=-1,
-            takefocus=0
-            ).grid(
-                row=15, 
-                column=5, 
-                columnspan=15, 
-                **widget_options, 
-                sticky='w'
-                )
+        # Save matrix file to CSV
+        w.LabelInput(
+            lfrm_matrixpath,
+            label="Write matrix file to CSV",
+            var=self.settings['write_matrix'],
+            input_class=ttk.Checkbutton,
+            input_args={
+                'onvalue': 1,
+                'offvalue': -1,
+                'takefocus': 0
+            },
+            tool_tip="Create CSV of imported matrix file on start." +
+                "\nCaptures multiple presentations and/or randomizing."
+        ).grid(row=15, column=5, columnspan=15, **widget_options, sticky='w')
 
         #################
         # Submit Button #

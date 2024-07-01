@@ -3,7 +3,7 @@
 A flexible app for presenting a number of standardized
 speech tests (e.g., HINT). The Speech Tasker can either
 import a matrix file or create one based on provided
-speech stimuli.  
+speech stimuli.
 
 Written by: Travis M. Moore
 Created: May 15, 2024
@@ -42,42 +42,15 @@ import models
 import setup
 import tmpy
 import views
+import tmpy
 from tmpy import tkgui
-from tmpy.functions import helper_funcs
+from tmpy.functions import helper_funcs as hf
 
 ##########
 # Logger #
 ##########
 # Create new logger
 logger = logging.getLogger(__name__)
-
-#################
-# Splash Screen #
-#################
-class Splash(tk.Toplevel):
-    def __init__(self, parent, text):
-        tk.Toplevel.__init__(self, parent)
-        #logger.info("Initializing splash screen")
-        self.withdraw()
-        self.title("Please wait")
-        self.geometry("300x200")
-        self.resizable(False, False)
-        tk.Label(self, text=text).pack()
-        self.center_splashscreen()
-        self.update()
-        
-    def center_splashscreen(self):
-        """ Center the splash screen. """
-        self.update_idletasks()
-        screen_width = self.winfo_screenwidth()
-        screen_height = self.winfo_screenheight()
-        size = tuple(int(_) for _ in self.geometry().split('+')[0].split('x'))
-        x = screen_width/2 - size[0]/2
-        y = screen_height/2 - size[1]/2
-        self.geometry("+%d+%d" % (x, y))
-        #print(f"\n\nscreen width, height: {screen_width}, {screen_height}")
-        #print(f"geometry: {self.geometry()}")
-        self.deiconify()
 
 ###############
 # Application #
@@ -87,15 +60,13 @@ class Application(tk.Tk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        #splash_screen = Splash(parent=self, text="Loading Automated HINT")
-
         #############
         # Constants #
         #############
         self.REF = __name__
         self.NAME = 'Speech Tasker'
         self.VERSION = '0.1.2'
-        self.EDITED = 'June 25, 2024'
+        self.EDITED = 'July 1, 2024'
 
         ################
         # Window Setup #
@@ -118,7 +89,11 @@ class Application(tk.Tk):
         style = ttk.Style()
         style.configure('Bold.TLabel', font=('TKDefaultFont', 12, 'bold'))
         style.configure('Gray.TLabel', foreground="gray")
-        style.configure('TLabelframe.Label', foreground='blue', font=('TkDefaultFont', 13))
+        style.configure(
+            'TLabelframe.Label', 
+            foreground='blue', 
+            font=('TkDefaultFont', 13)
+        )
 
         ######################################
         # Initialize Models, Menus and Views #
@@ -181,15 +156,17 @@ class Application(tk.Tk):
             '<<CreateViewSubmit>>': lambda _: self._create_mfile(),
 
             # ImportView window
-            '<<ImportViewSubmit>>': lambda _: self._save_settings(), #self._prepare_trials(),
+            '<<ImportViewSubmit>>': lambda _: self._save_settings(),
 
             # Tools menu
             '<<ToolsAudioSettings>>': lambda _: self._show_audio_dialog(),
             '<<ToolsCalibration>>': lambda _: self._show_calibration_dialog(),
 
             # Help menu
-            '<<HelpREADME>>': lambda _: self._show_help(),
-            '<<HelpChangelog>>': lambda _: self._show_changelog(),
+            '<<HelpREADME>>': lambda _: self._launch_browser_help('README'),
+            '<<HelpCHANGELOG>>': (
+                lambda _: self._launch_browser_help('CHANGELOG')
+            ),
 
             # Calibration window
             '<<CalPlay>>': lambda _: self.play_calibration_file(),
@@ -221,8 +198,8 @@ class Application(tk.Tk):
                 logger.critical("Mandatory update version: %s", u.new_version)
                 messagebox.showerror(
                     title="New Version Available",
-                    message="A mandatory update is available. Please install " +
-                        f"version {u.new_version} to continue.",
+                    message="A mandatory update is available. Please " +
+                        f"install version {u.new_version} to continue.",
                     detail=f"You are using version {u.app_version}, but " +
                         f"version {u.new_version} is available."
                 )
@@ -242,7 +219,8 @@ class Application(tk.Tk):
                 messagebox.showerror(
                     title="Update Check Failed",
                     message="Cannot retrieve version number!",
-                    detail=f"'{self.NAME}' does not exist in the version library."
+                    detail=f"'{self.NAME}' does not exist in the " +
+                        "version library."
                  )
             elif u.status == 'library_inaccessible':
                 messagebox.showerror(
@@ -255,14 +233,15 @@ class Application(tk.Tk):
         self.menu.help_menu.entryconfig('README...', state='disabled')
 
         # Destroy splash screen
-        if '_PYIBoot_SPLASH' in os.environ and importlib.util.find_spec("pyi_splash"):
+        if '_PYIBoot_SPLASH' in os.environ \
+            and importlib.util.find_spec("pyi_splash"):
             import pyi_splash
             pyi_splash.update_text('UI Loaded ...')
             pyi_splash.close()
             logger.info('Splash screen closed.')
 
         # Center main window
-        self.center_window()
+        tmpy.functions.tkgui_funcs.center_window(self)
 
         # Initialization successful
         logger.info('Application initialized successfully')
@@ -270,30 +249,6 @@ class Application(tk.Tk):
     #####################
     # General Functions #
     #####################
-    def center_window(self):
-        """ Center the root window. """
-        self.update_idletasks()
-        logger.info("Centering root window after drawing widgets")
-        screen_width = self.winfo_screenwidth()
-        screen_height = self.winfo_screenheight()
-        size = tuple(int(_) for _ in self.geometry().split('+')[0].split('x'))
-        x = screen_width/2 - size[0]/2
-        y = screen_height/2 - size[1]/2
-        self.geometry("+%d+%d" % (x, y))
-        self.deiconify()
-
-    # def center_window2(self, window):
-    #     """ Center the root window. """
-    #     logger.info("Centering root window after drawing widgets")
-    #     window.update_idletasks()
-    #     screen_width = window.winfo_screenwidth()
-    #     screen_height = window.winfo_screenheight()
-    #     size = tuple(int(_) for _ in window.geometry().split('+')[0].split('x'))
-    #     x = screen_width/2 - size[0]/2
-    #     y = screen_height/2 - size[1]/2
-    #     window.geometry("+%d+%d" % (x, y))
-    #     window.deiconify()
-
     def _create_filename(self):
         """ Create file name and path. """
         logger.info("Creating file name with date stamp")
@@ -336,11 +291,6 @@ class Application(tk.Tk):
         }
         # Create and write matrix CSV file
         mf = models.ImportSpeechTaskerMatrix(**pars)
-        
-        
-        #self._save_settings()
-        
-        
         return mf.import_matrix_file()
 
     def on_start(self):
@@ -409,19 +359,20 @@ class Application(tk.Tk):
         directory = 'Data'
         fullpath = os.path.join(directory, self.filename)
         # Define items to include in CSV
-        order = ['trial',
-                 'Subject',
-                 'Condition',
-                 'file',
-                 'list_num',
-                 'sentence_num',
-                 'speaker',
-                 'desired_level_dB',
-                 'correct',
-                 'incorrect',
-                 'total_words',
-                 'num_correct'
-                 ]
+        order = [
+            'trial',
+            'Subject',
+            'Condition',
+            'file',
+            'list_num',
+            'sentence_num',
+            'speaker',
+            'desired_level_dB',
+            'correct',
+            'incorrect',
+            'total_words',
+            'num_correct'
+        ]
         try:
             self.dh.save_data(
                 filepath=fullpath,
@@ -444,7 +395,7 @@ class Application(tk.Tk):
                 detail=e
             )
             return
-        
+
     def on_next(self):
         """ Get and present next trial. """
         logger.info("Fetching next trial")
@@ -497,10 +448,10 @@ class Application(tk.Tk):
         # Create dict of arguments
         pars = {
             'filepath': vals['sentence_file_path'],
-            'lists': helper_funcs.string_to_list(vals['Sentence Lists'], 'int'),
+            'lists': hf.string_to_list(vals['Sentence Lists'], 'int'),
             'sentences_per_list': vals['Sentences per List'],
-            'levels': helper_funcs.string_to_list(vals['Sentence Levels'], 'float'),
-            'speakers': helper_funcs.string_to_list(vals['Sentence Speakers'], 'int'),
+            'levels': hf.string_to_list(vals['Sentence Levels'], 'float'),
+            'speakers': hf.string_to_list(vals['Sentence Speakers'], 'int'),
             'presentations': vals['Presentations'],
             'randomize': vals['Randomize'],
             'write': True
@@ -521,10 +472,10 @@ class Application(tk.Tk):
         # Create dict of arguments
         pars = {
             'filepath': vals['sentence_file_path'],
-            'lists': helper_funcs.string_to_list(vals['Sentence Lists'], 'int'),
+            'lists': hf.string_to_list(vals['Sentence Lists'], 'int'),
             'sentences_per_list': vals['Sentences per List'],
-            'levels': helper_funcs.string_to_list(vals['Sentence Levels'], 'float'),
-            'speakers': helper_funcs.string_to_list(vals['Sentence Speakers'], 'int'),
+            'levels': hf.string_to_list(vals['Sentence Levels'], 'float'),
+            'speakers': hf.string_to_list(vals['Sentence Speakers'], 'int'),
             'presentations': vals['Presentations'],
             'randomize': vals['Randomize'],
             'write': True
@@ -614,31 +565,32 @@ class Application(tk.Tk):
     #######################
     # Help Menu Functions #
     #######################
-    def _show_help(self):
-        """ Create html help file and display in default browser. """
-        logger.info("Calling README file (will open in browser)")
-        # Read markdown file and convert to html
-        with open(app_assets.README.README_MD, 'r') as f:
-            text = f.read()
-            html = markdown.markdown(text)
-        # Create html file for display
-        with open(app_assets.README.README_HTML, 'w') as f:
-            f.write(html)
-        # Open README in default web browser
-        webbrowser.open(app_assets.README.README_HTML)
-
-    def _show_changelog(self):
-        """ Create html CHANGELOG file and display in default browser. """
-        logger.info("Calling CHANGELOG file (will open in browser)")
-        # Read markdown file and convert to html
-        with open(app_assets.CHANGELOG.CHANGELOG_MD, 'r') as f:
-            text = f.read()
-            html = markdown.markdown(text)
-        # Create html file for display
-        with open(app_assets.CHANGELOG.CHANGELOG_HTML, 'w') as f:
-            f.write(html)
-        # Open CHANGELOG in default web browser
-        webbrowser.open(app_assets.CHANGELOG.CHANGELOG_HTML)
+    def _launch_browser_help(self, help_file):
+        """ Create HTML from markdown and display in browser.
+        
+        :param help_file: Either 'README' or 'CHANGELOG'
+        :type help_file: str
+        :return: Opens file in browser
+        :rtype: None
+        """
+        # Determine which help doc to display
+        if help_file == "README":
+            markdown_file = app_assets.README.README_MD
+            html_file = app_assets.README.README_HTML
+        elif help_file == "CHANGELOG":
+            markdown_file = app_assets.CHANGELOG.CHANGELOG_MD
+            html_file = app_assets.CHANGELOG.CHANGELOG_HTML
+        else:
+            messagebox.showerror(
+                title="Invalid Argument",
+                message="An invalid help file type was given."
+            )
+            return
+        # Convert and display
+        tmpy.functions.tkgui_funcs.open_in_browser(
+            markdown_path=markdown_file,
+            html_path=html_file
+        )
 
     ###################
     # Audio Functions #
@@ -668,7 +620,7 @@ class Application(tk.Tk):
         for speaker routing.
         """
         logger.info("Formatting channel routing")
-        return helper_funcs.string_to_list(routing, 'int')
+        return hf.string_to_list(routing, 'int')
     
     def _play(self, pres_level):
         """ Format channel routing, present audio and catch exceptions. """
@@ -676,7 +628,7 @@ class Application(tk.Tk):
         try:
             routing=[self.th.trial_info['speaker']]
         except AttributeError:
-            routing = helper_funcs.string_to_list(
+            routing = hf.string_to_list(
                 self.settings['channel_routing'].get(), 'int')
             
         # Attempt to present audio
@@ -690,8 +642,8 @@ class Application(tk.Tk):
             logger.error("Invalid audio device: %s", e)
             messagebox.showerror(
                 title="Invalid Device",
-                message="Invalid audio device! Go to Tools>Audio Settings " +
-                    "to select a valid audio device.",
+                message="Invalid audio device! Go to Tools>Audio Settings " 
+                    + "to select a valid audio device.",
                 detail = e
             )
             # Open Audio Settings window
@@ -700,9 +652,9 @@ class Application(tk.Tk):
             logger.error("Invalid routing: %s", e)
             messagebox.showerror(
                 title="Invalid Routing",
-                message="Speaker routing must correspond with the " +
-                    "number of channels in the audio file! Go to " +
-                    "Tools>Audio Settings to update the routing.",
+                message="Speaker routing must correspond with the " 
+                    + "number of channels in the audio file! Go to " 
+                    + "Tools>Audio Settings to update the routing.",
                 detail=e
             )
             # Open Audio Settings window
@@ -712,8 +664,8 @@ class Application(tk.Tk):
             messagebox.showerror(
                 title="Clipping",
                 message="The level is too high and caused clipping.",
-                detail="The waveform will be plotted when this message is " +
-                    "closed for visual inspection."
+                detail="The waveform will be plotted when this " 
+                    + "message is closed for visual inspection."
             )
             self.a.plot_waveform("Clipped Waveform")
 

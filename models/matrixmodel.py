@@ -34,10 +34,13 @@ class ImportSpeechTaskerMatrix(MatrixFile):
     """ Import a matrix file for use during session. """
 
     def __init__(self, **kwargs):
+        logger.info("Initializing ImportSpeechTaskerMatrix")
+        # Create instance variables
         self.kwargs = kwargs
 
     def import_matrix_file(self):
         """ Import matrix file. """
+        logger.info("Preparing trials")
         try:
             # Import matrix file
             matrix_df = self.import_file(self.kwargs['filepath'])
@@ -45,6 +48,7 @@ class ImportSpeechTaskerMatrix(MatrixFile):
             repeated = self.repeat_trials(matrix_df, self.kwargs['presentations'])
             # Randomize trials
             if self.kwargs['randomize'] == 1:
+                logger.info("Randomizing trials")
                 randomized = self.randomize(repeated)
                 if self.kwargs['write'] == 1:
                     randomized.to_csv("matrix_file.csv", index=False)
@@ -64,10 +68,13 @@ class CreateSpeechTaskerMatrix(MatrixFile):
 
     def __init__(self, **kwargs):
         """ Expects a dictionary of arguments. """
+        logger.info("Initializing CreateSpeechTaskerMatrix")
+        # Create instance variables
         self.kwargs = kwargs
 
     def create_matrix_file(self):
         """ Create the final matrix file dataframe. """
+        logger.info("Creating matrix file")
         try:
             # Import speech task stimuli
             stimulus_file = self.import_file(self.kwargs['filepath'])
