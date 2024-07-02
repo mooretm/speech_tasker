@@ -1,4 +1,24 @@
-<h1 style="text-align: center;">Change Log: Speech Tasker</h1>
+<h1 style="text-align: center;">CHANGELOG: Speech Tasker</h1>
+---
+
+## Version 1.0.0
+
+Date: July 02, 2024
+
+### Major Features
+1. Added custom validated widgets that required:
+    - Updating settings variable names
+    - Swapping out previous widgets with new widgets
+
+### Minor Features
+1. Added README file.
+
+### Patches
+1. Refactored several functions (e.g., displaying help) into library. 
+2. Recompiled to consume latest library updates.
+<br>
+<br>
+
 ---
 
 ## Version 0.1.2

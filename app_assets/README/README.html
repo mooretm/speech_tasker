@@ -3,31 +3,21 @@
 </div>
 
 <div style="text-align: center;">
-    <h1>Speaker Balancer</h1>
+    <h1>Speech Tasker</h1>
 
     Written by: <b>Travis M. Moore</b>
     <br>
-    Latest version: <b>Version 4.0.1</b><br>
-    Originally created: <b>June 09, 2022</b><br>
-    Last edited: <b>May 06, 2024</b><br><br>
+    Latest version: <b>Version 1.0.0</b><br>
+    Originally created: <b>December 07, 2022</b><br>
+    Last edited: <b>July 02, 2024</b><br><br>
 </div>
 
 <hr />
 <h1>Description</h1>
-<p>The Speaker Balancer is a useful tool for quickly balancing lab speakers using a sound level meter. </p>
-<ul>
-<li>
-<p>Select speakers just by clicking. </p>
-</li>
-<li>
-<p>Present a white Gaussian noise to the specified speaker. </p>
-</li>
-<li>
-<p>Calculate offsets (using the first speaker as a reference). Easily save offsets to CSV, and monitor offsets in real time as they appear on screen. 
+<p>Speech Tasker improves data quality for speech testing by providing control over trials, built-in calibration, audio presentation, GUI-based scoring, and data recording. </p>
+<p>The Speech Tasker application offers a standardized way to present speech test materials (e.g., HINT, IEEE). The Speech Tasker presentations are controlled using CSV files with trial information (referred to as matrix files). Calibration and audio routing capabilities are built in. Scoring is simple: only key words have a checkbox beneath them, and clicking the checkbox indicates the participant repeated that word correctly. Data are output in CSV format for later analysis.
 <br>
 <br></p>
-</li>
-</ul>
 <hr />
 <h1>Getting Started</h1>
 <h2>Dependencies</h2>
@@ -40,7 +30,7 @@
 <p>This is a compiled app; the executable file is stored on Starfile at: \starfile\Public\Temp\MooreT\Custom Software</p>
 </li>
 <li>
-<p>Simply copy the executable file and paste to a location on the local machine. </p>
+<p>Simply copy the executable file and paste to a location on the local machine.</p>
 </li>
 <li>
 <p><strong>DO NOT RUN FROM THE STARFILE SERVER.</strong> This ties up the program for others, and will result in erratic app behavior. </p>
@@ -52,78 +42,164 @@
 <p><strong>DO NOT RUN FROM THE STARFILE SERVER.</strong> This ties up the program for others, and will result in erratic app behavior. That's right, this statement is identical to the one above - it's just that important!</p>
 </li>
 <li>
-<p>Double-click to start the application for the first time.
+<p>Double-click to start the application for the first time.</p>
+</li>
+<li>
+<p>Navigate to File&gt;Import Matrix File, or File&gt;Create Matrix File</p>
+</li>
+<li>
+<p>Navigate to File&gt;Start to begin the task. </p>
+</li>
+</ul>
+<p><b>NOTE:</b> Speech test materials are not included and must be provided when importing or creating a matrix file. 
 <br>
 <br></p>
-</li>
-</ul>
 <hr />
 <h1>Main Screen</h1>
-<p>The Speaker Balancer offers all the controls you will need on a single screen for ease of use. Enjoy the sky blue band across the top of the screen - it's almost like being at the beach. </p>
-<p><img src="main_window.png" alt="Main Window Image" width="500"/></p>
-<h2>Controls</h2>
-<h3>Playback Group</h3>
+<p>The Speech Tasker main screen (below) offers all the controls you will need to present and score a task.</p>
+<p><img src="main_screen.png" alt="Main Window Image" width="500"/></p>
+<h2>Presentation Controls</h2>
 <ul>
 <li>
-<p>Duration (s): The duration of the white noise in seconds</p>
+<p>Use the <code>Next</code> button to present a trial.</p>
 </li>
 <li>
-<p>Level (dB): The scaling factor to apply to the white noise. Adjust this level until the sound level meter reads around 70 dB A (slow). </p>
-</li>
-<li>
-<p>Play button: Begin audio playback.</p>
-</li>
-<li>
-<p>Stop button: Stop audio playback.</p>
+<p>Use the <code>Repeat</code> button to repeat the audio presentation without scoring or moving to the next trial.</p>
 </li>
 </ul>
-<h3>Offsets Group</h3>
+<h2>Scoring Controls</h2>
 <ul>
 <li>
-<p>SLM Reading (dB): The value read from the sound level meter while the white noise is actively playing. </p>
+<p>The <code>Sentence</code> window will display the word(s) for a given trial. Checkboxes will appear beneath key words only. Click the checkbox below a word to indicate that the participant repeated that word correctly. Words with empty checkboxes will be counted as incorrect.</p>
 </li>
 <li>
-<p>Calculate Offset button: Calculates an offset based off of the value from speaker 1 and stores that value. </p>
+<p>The <code>Select All</code> button is a convenience feature that will select all checkboxes for you. </p>
+</li>
+<li>
+<p>The <code>Next</code> button will record the words correct (and incorrect) and start the next trial. </p>
 </li>
 </ul>
-<h2>Offsets</h2>
-<p>The Offsets frame displays the offsets for each speaker as they are calculated. Refer to this section while updating the RME offsets using Total Mix. </p>
-<h2>Speaker Number</h2>
-<p>The Speak Number group contains buttons for each speaker. Route the white noise to any speaker by clicking the appropriate button. 
+<h2>Session Info</h2>
+<p>The current session details are displayed in a side panel. Variable values (e.g., level) update in real time. A trial counter is also located here. 
+<br>
+<br></p>
+<hr />
+<h1>File Menu</h1>
+<h2>File&gt;Import Matrix File</h2>
+<p>This command opens a window where you can provide session details (see below). </p>
+<p><img src="import_matrix_file.png" alt="Import Matrix File Image" width="500"/></p>
+<h3>Session Information</h3>
+<ul>
+<li>
+<p>Subject: A unique subject identifier. Can be alpha, numeric, or both.</p>
+</li>
+<li>
+<p>Condition: A <strong>UNIQUE</strong> condition name. Can be alpha, numeric, or both. Separate words with underscores.</p>
+</li>
+</ul>
+<h3>Sentence Options</h3>
+<ul>
+<li>
+<p>Presentations: Number of times to present all trials. For example, entering "1" will simply play the trials in the matrix file. Entering "2" will play each trial twice.</p>
+</li>
+<li>
+<p>Randomize: Select if you want to randomize trials in provided matrix file. If unselected, trials will be presented in the exact order given in the matrix file.</p>
+</li>
+</ul>
+<h3>Noise Options</h3>
+<ul>
+<li>Level: The level of the background noise. Currently, nothing is done with the level, but it is included in the output file to help with analysis. </li>
+</ul>
+<h3>File Locations</h3>
+<ul>
+<li>
+<p>Audio File Directory: Browse to the <strong>FOLDER</strong> containing the audio files. </p>
+</li>
+<li>
+<p>Matrix File Path: Browse to the exact <strong>MATRIX FILE</strong> to use for the session. </p>
+</li>
+<li>
+<p>Write matrix file to CSV: If you randomize and/or specify multiple presentations, selecting this checkbutton will create a CSV of the repeated/randomized trials once the task has started (not when you click <code>Submit</code>).</p>
+</li>
+</ul>
+<h2>File&gt;Create Matrix File</h2>
+<p>This command opens a window to automate matrix file creation. Simply provide the required data and click <code>Submit</code>; a file called <code>matrix_file.csv</code> will be created in the application's current directory. </p>
+<p><img src="create_matrix_file.png" alt="Create Matrix File Image" width="500"/></p>
+<h3>Session Information</h3>
+<ul>
+<li>
+<p>Subject: A unique subject identifier. Can be alpha, numeric, or both.</p>
+</li>
+<li>
+<p>Condition: A <strong>UNIQUE</strong> condition name. Can be alpha, numeric, or both. Separate words with underscores.</p>
+</li>
+</ul>
+<h3>Sentence Options</h3>
+<ul>
+<li>
+<p>List(s): The list numbers to include in the session. Separate multiple values with a comma and space: <code>1, 2, 3</code>.</p>
+</li>
+<li>
+<p>Level(s): Either a single level (that will be applied to all lists) or multiple levels (must be one per list). Separate multiple values with a comma and space: <code>1, 2, 3</code>.</p>
+</li>
+<li>
+<p>Speaker(s): Either a single speaker for all lists, or a list of multiple speakers (must be one per list). Separate multiple values with a comma and space: <code>1, 2, 3</code>.</p>
+</li>
+<li>
+<p>Sentences per List: The number of sentences to include from each list.</p>
+</li>
+<li>
+<p>Presentations: Number of times to present all trials. For example, entering "1" will simply play the trials in the matrix file. Entering "2" will play each trial twice.</p>
+</li>
+<li>
+<p>Randomize: Select if you want to randomize trials in provided matrix file. If unselected, trials will be presented in the exact order given in the matrix file.</p>
+</li>
+</ul>
+<h3>Noise Options</h3>
+<ul>
+<li>Level: The level of the background noise. Currently, nothing is done with the level, but it is included in the output file to help with analysis. </li>
+</ul>
+<h3>File Locations</h3>
+<ul>
+<li>
+<p>Audio File Directory: Browse to the <strong>FOLDER</strong> containing the audio files. </p>
+</li>
+<li>
+<p>Sentence CSV File: Browse to the exact <strong>CSV FILE</strong> containing the sentences/words to use for the session. </p>
+</li>
+</ul>
+<p><b>Note:</b> A matrix CSV file is generated after clicking <code>Submit</code>.</p>
+<h2>File&gt;Start</h2>
+<p>The command to begin the task is under the <code>File</code> menu to avoid accidental starts by participants. 
 <br>
 <br></p>
 <hr />
 <h1>Tools Menu</h1>
-<h2>Audio Settings</h2>
-<p>The Audio Settings window allows you to select an audio device and assign speakers for playback. </p>
-<p><b>Device Selection.</b> The Audio Settings window displays available audio devices in a table (see lower part of image below). Simply click to choose the desired device. Your selection will be highlighted in blue.<br> 
-<strong>Important:</strong> DO NOT SELECT ANY DEVICE WITH "ASIO" IN THE NAME. SELECT "Analog (1-8)" WITH 8 OUTPUT CHANNELS. If there are multiple Analog (1-8) options, you will have to guess and check by selecting one, then trying the Tools&gt;Test Offsets function. </p>
-<p><b>Speaker Assignment.</b> To assign a speaker for playback, enter the speaker/channel number in the entry box (see upper part of image below). Note that you must provide a speaker for each channel in the audio file. For example, if your stimulus has eight channels, you must provide a list of eight speakers. Separate numbers with spaces when providing a list of speakers. For example: <code>1 2 3 4 5 6 7 8</code>.</p>
-<p><img src="audio_settings.png" alt="Audio Settings Window" width="500"/>
+<h2>File&gt;Audio Settings</h2>
+<p>The Audio Settings window allows you to select an audio device and assign speakers for playback <b>during calibration</b>: the matrix file <code>speakers</code> column will control playback during testing. </p>
+<p><img src="audio_device_window.png" alt="Audio Settings Window Image" width="500"/></p>
+<h3>Channel Routing</h3>
+<p>To assign a speaker for playback during calibration, enter the speaker/channel number in the <code>Channels</code> text box.</p>
+<p><b>Note:</b>: You must provide a speaker for each channel in the audio file. For example, if your stimulus has eight channels, you must provide a list of eight speakers. Separate numbers with a comma and space when providing a list of speakers. For example: <code>1, 2, 3, 4, 5, 6, 7, 8</code>.</p>
+<h3>Device Selection</h3>
+<p>The Audio Settings window displays available audio devices in a scrollable table. Simply click to choose the desired device. Your selection will be highlighted in blue.</p>
+<h2>File&gt;Calibration</h2>
+<p>The Calibration window (below) provides a simple way to calibrate your stimuli using a sound level meter (SLM). </p>
+<p><b>NOTE:</b> Calibration files are imported without any scaling applied. In essence, "dB FS" is simply however the system is set, and the original level of the recording. </p>
+<p><img src="calibration_window.png" alt="Calibration Window Image" width="500"/></p>
+<h3>Calibration Stimulus</h3>
+<p>You can choose to use the built-in white noise, or provide a custom file for the calibration signal (top group in image). If a multi-channel calibration file is provided, ensure the correct number of channels have been assigned in <code>Tools&gt;Audio Settings</code>. </p>
+<h3>Playback Controls</h3>
+<p>Use the <code>Level (dB)</code> text box to adjust the digital playback level in dB (middle group in image). Adjusting the level here acts like a volume control. Adjust the level until the SLM reads above the noise floor of the room (e.g., ~80 dB). The Play and Stop buttons allow you to start and stop the audio playback.</p>
+<h3>Measured Level</h3>
+<p>Use an SLM to measure the level of the calibration signal and enter the value into the <code>SLM Reading (dB)</code> text box (bottom group in image). Click submit, and the application will calculate an offset so that you can specify presentation levels in dB (whichever type of dB you set the SLM to when measuring). </p>
+<p><b>NOTE:</b> For multi-channel files, the same SLM offset is applied to each channel individually. <b>Currently there is not support for multiple SLM offsets.</b></p>
+<p><b>NOTE:</b> The <code>Submit</code> button is disabled until you click the <code>Play</code> button. 
 <br>
 <br></p>
 <hr />
-<h1>How to Balance Speakers</h1>
-<p>The instructions below guide you through the process of using the app to balance the speakers in a given lab. Instructions reference the different color rectangles imposed on the image below.</p>
-<p><img src="totalmix2.png" alt="TotalMix image" width="500"/></p>
-<ol>
-<li>Open TotalMix (see image above)</li>
-<li>Click the Snapshot labeled "Default" (green rectangle)</li>
-<li>Click the Layout Preset labeled "Default" (green rectangle)</li>
-<li>Ensure channels are mapped 1-to-1 (click each channel along the bottom row [Hardware Outputs; blue rectangle], and verify that the corresponding channel along the top row [Software Playback; red rectangle] has the level slider in the 0 position)</li>
-<li>Ensure all the yellow values at the bottom of the sliders along the top row [yellow rectangle] are set to 0</li>
-<li>Create a new Snapshot and Layout Preset name based on the study (green rectangle)</li>
-<li>Create a new Snapshot and Layout Preset from the defaults by clicking the "Store" button (the saved profiles will flash), then click on the new profile (flashing will cease)</li>
-<li>Use the Speaker Balancer as described above</li>
-<li>Calculated offsets will appear in the "Offsets" group at the far righthand side of the Speaker Balancer screen</li>
-<li>Use the offset values from the app to update the yellow values under the sliders of the top row of channels (yellow rectangle)</li>
-<li>Navigate to Tools&gt;Test Offsets to automatically step through each speaker, checking that the sound level meter reads a constant value (within a few tenths of a dB) for all speakers
-<br>
-<br></li>
-</ol>
-<hr />
 <h1>Compiling from Source</h1>
-<p><code>pyinstaller --noconfirm --onefile --windowed --icon "C:/Users/MooTra/Code/Python/tmpy/tkgui/shared_assets/images/logo_icons/logo_full.ico" --add-data "C:/Users/MooTra/Code/Python/speech_tasker/app_assets;app_assets/" --add-data "C:/Users/MooTra/Code/Python/tmpy;tmpy/" --paths "C:/Users/MooTra/Code/Python/tmpy" --hidden-import "numpy" --hidden-import "pandas" --hidden-import "sounddevice" --hidden-import "soundfile" --hidden-import "msoffcrypto" --hidden-import "idlelib"  "C:/Users/MooTra/Code/Python/speech_tasker/controller.py"</code>
+<p><code>pyinstaller --noconfirm --onefile --windowed</code>
 <br>
 <br></p>
 <hr />

@@ -153,7 +153,7 @@ class MainMenu(tk.Menu):
             compound=tk.LEFT,
         )
         self.help_menu.add_command(
-            label="Change Log...",
+            label="CHANGELOG...",
             command=self._event('<<HelpCHANGELOG>>'),
             image=self.icons['help_changelog'],
             compound=tk.LEFT,
@@ -177,7 +177,7 @@ class MainMenu(tk.Menu):
         about_detail = (
             'Written by: Travis M. Moore\n' +
             'Version: {}\n'.format(self._app_info['version']) +
-            'Created: May 07, 2024\n'
+            'Created: December 07, 2022\n'
             'Last edited: {}'.format(self._app_info['last_edited'])
         )
         messagebox.showinfo(

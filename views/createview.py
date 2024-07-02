@@ -162,7 +162,7 @@ class CreateView(tk.Toplevel):
             label="Sentences per List",
             var=self.settings['Sentences per List'],
             input_class=w.RequiredEntry,
-            tool_tip="The number of sentences to present from each list."
+            tool_tip="The number of sentences to include from each list."
         ).grid(row=10, column=10, padx=5, pady=(5,0))
 
         # Presentations

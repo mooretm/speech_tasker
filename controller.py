@@ -1,12 +1,14 @@
 """ Speech Tasker. 
 
 A flexible app for presenting a number of standardized
-speech tests (e.g., HINT). The Speech Tasker can either
-import a matrix file or create one based on provided
-speech stimuli.
+speech tests (e.g., HINT). Speech Tasker requires a CSV
+file of sentences to present, with key words CAPITALIZED.
+The Speech Tasker presents trials using matrix files. 
+Matrix files can be made by manually as CSV files, or 
+created directly using the Speech Tasker. 
 
 Written by: Travis M. Moore
-Created: May 15, 2024
+Created: December 07, 2022
 """
 
 ###########
@@ -21,12 +23,10 @@ import os
 import sys
 import tkinter as tk
 from tkinter import font
-import webbrowser
 from pathlib import Path
 from tkinter import messagebox
 
 # Third party
-import markdown
 import numpy as np
 
 # Add custom path
@@ -65,8 +65,8 @@ class Application(tk.Tk):
         #############
         self.REF = __name__
         self.NAME = 'Speech Tasker'
-        self.VERSION = '0.1.2'
-        self.EDITED = 'July 1, 2024'
+        self.VERSION = '1.0.0'
+        self.EDITED = 'July 2, 2024'
 
         ################
         # Window Setup #
@@ -194,8 +194,8 @@ class Application(tk.Tk):
             _filepath = self.settings['version_lib_path'].get()
             u = tkgui.models.VersionModel(_filepath, self.NAME, self.VERSION)
             if u.status == 'mandatory':
-                logger.critical("This version: %s", self.VERSION)
-                logger.critical("Mandatory update version: %s", u.new_version)
+                logger.error("This version: %s", self.VERSION)
+                logger.error("Mandatory update version: %s", u.new_version)
                 messagebox.showerror(
                     title="New Version Available",
                     message="A mandatory update is available. Please " +
@@ -203,10 +203,15 @@ class Application(tk.Tk):
                     detail=f"You are using version {u.app_version}, but " +
                         f"version {u.new_version} is available."
                 )
-                logger.critical("Application failed to initialize")
+                logger.error("Application failed to initialize")
                 self.destroy()
                 return
             elif u.status == 'optional':
+                logger.warning("A new version is available.")
+                logger.warning(
+                    "Current version: %s, latest version: %s",
+                    u.app_version, u.new_version
+                )
                 messagebox.showwarning(
                     title="New Version Available",
                     message="An update is available.",
@@ -230,7 +235,7 @@ class Application(tk.Tk):
                 )
 
         # Temporarily disable Help menu until documents are written
-        self.menu.help_menu.entryconfig('README...', state='disabled')
+        #self.menu.help_menu.entryconfig('README...', state='disabled')
 
         # Destroy splash screen
         if '_PYIBoot_SPLASH' in os.environ \
