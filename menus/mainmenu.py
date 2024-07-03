@@ -45,7 +45,7 @@ class MainMenu(tk.Menu):
 
     def _bind_accelerators(self):
         """ Bind shortcut keys to event triggers. """
-        logger.debug("Binding menu accelerators")
+        logger.info("Binding menu accelerators")
         self.bind_all('<Control-q>', self._event('<<FileQuit>>'))
 
 
@@ -54,7 +54,7 @@ class MainMenu(tk.Menu):
             PhotoImage objects cannot be created until an 
             instance of Tk has been created.
         """
-        logger.debug("Importing icons")
+        logger.info("Importing icons")
         self.icons = {
             # File menu
             'file_settings': tk.PhotoImage(file=images.SETTINGS_ICON),
@@ -75,7 +75,7 @@ class MainMenu(tk.Menu):
 
     def __init__(self, parent, _app_info, **kwargs):
         super().__init__(parent, **kwargs)
-        logger.debug("Initializing MainMenu")
+        logger.info("Initializing MainMenu")
 
         # Assign variables
         self._app_info = _app_info
@@ -86,7 +86,7 @@ class MainMenu(tk.Menu):
         #############
         # File Menu #
         #############
-        logger.debug("Creating 'File' menu")
+        logger.info("Creating 'File' menu")
         self.file_menu = tk.Menu(self, tearoff=False)
         self.file_menu.add_command(
             label="Import Matrix File...",
@@ -118,7 +118,7 @@ class MainMenu(tk.Menu):
         ############## 
         # Tools menu #
         ##############
-        logger.debug("Creating 'Tools' menu")
+        logger.info("Creating 'Tools' menu")
         tools_menu = tk.Menu(self, tearoff=False)
         tools_menu.add_command(
             label='Audio Settings...',
@@ -138,7 +138,7 @@ class MainMenu(tk.Menu):
         #############
         # Help Menu #
         #############
-        logger.debug("Creating 'Help' menu")
+        logger.info("Creating 'Help' menu")
         self.help_menu = tk.Menu(self, tearoff=False)
         self.help_menu.add_command(
             label='About...',
@@ -172,7 +172,7 @@ class MainMenu(tk.Menu):
     # HELP menu
     def show_about(self):
         """ Show the 'About' dialog. """
-        logger.debug("Loading 'About' window")
+        logger.info("Loading 'About' window")
         about_message = self._app_info['name']
         about_detail = (
             'Written by: Travis M. Moore\n' +

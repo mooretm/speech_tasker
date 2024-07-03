@@ -177,15 +177,6 @@ Use an SLM to measure the level of the calibration signal and enter the value in
 
 ---
 
-# Compiling from Source
-```
-pyinstaller --noconfirm --onefile --windowed 
-```
-<br>
-<br>
-
----
-
 # Contact
 Please use the contact information below to submit bug reports, feature requests and any other feedback.
 

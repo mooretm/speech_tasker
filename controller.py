@@ -118,7 +118,7 @@ class Application(tk.Tk):
         logger.info("Setting controller 'start' flag to True")
         self.start_flag = True
 
-        # Assign special quit function on window close
+        # Assign custom quit function on window close
         self.protocol('WM_DELETE_WINDOW', self._quit)
 
         # Load calibration model
@@ -194,8 +194,6 @@ class Application(tk.Tk):
             _filepath = self.settings['version_lib_path'].get()
             u = tkgui.models.VersionModel(_filepath, self.NAME, self.VERSION)
             if u.status == 'mandatory':
-                logger.error("This version: %s", self.VERSION)
-                logger.error("Mandatory update version: %s", u.new_version)
                 messagebox.showerror(
                     title="New Version Available",
                     message="A mandatory update is available. Please " +
@@ -207,11 +205,6 @@ class Application(tk.Tk):
                 self.destroy()
                 return
             elif u.status == 'optional':
-                logger.warning("A new version is available.")
-                logger.warning(
-                    "Current version: %s, latest version: %s",
-                    u.app_version, u.new_version
-                )
                 messagebox.showwarning(
                     title="New Version Available",
                     message="An update is available.",

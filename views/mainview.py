@@ -1,7 +1,7 @@
 """ Main view for automated HINT.
 
-    Written by: Travis M. Moore
-    Last edited: May 09, 2024
+Written by: Travis M. Moore
+Last edited: May 09, 2024
 """
 
 ###########
@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 class MainView(ttk.Frame):
     def __init__(self, parent, settings, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
-        logger.debug("Initializing MainView")
+        logger.info("Initializing MainView")
 
         # Assign attributes
         self.parent = parent
@@ -36,10 +36,9 @@ class MainView(ttk.Frame):
         # Draw widgets
         self._draw_widgets()
 
-
     def _draw_widgets(self):
         """ Draw widgets. """
-        logger.debug("Drawing MainView widgets")
+        logger.info("Drawing MainView widgets")
         
         ##########
         # Frames #
@@ -152,9 +151,9 @@ class MainView(ttk.Frame):
             )
         self.btn_repeat.grid(row=15, column=6, pady=(0, 10))
 
-    #############
-    # Functions #
-    #############
+    ###########
+    # Methods #
+    ###########
     def _reset(self):
         """ Destroy all labels and checkbuttons in main label. 
         Reset all dicts to empty.
@@ -171,7 +170,6 @@ class MainView(ttk.Frame):
         self.words_dict = {}
         self.buttons_dict = {}
         self.buttonstates_dict = {}
-
 
     def update_main_label(self, sentence):
         """ Update the main label to display the written sentence
@@ -197,15 +195,13 @@ class MainView(ttk.Frame):
                     )
                 self.buttons_dict[ii].grid(row=10, column=ii)
 
-
     def enable_user_controls(self, text):
         """ Enable user controls. Set NEXT button text. """
-        logger.debug("Enabling user controls")
+        logger.info("Enabling user controls")
         self.btn_select_all.config(state='enabled')
         self.btn_next.config(state='enabled')
         self.btn_next.config(text=text)
         self.btn_repeat.config(state='enabled')
-
 
     def disable_user_controls(self, text):
         """ Disable user controls. Set NEXT button text. """
@@ -214,30 +210,26 @@ class MainView(ttk.Frame):
         self.btn_repeat.config(state='disabled')
         self.btn_select_all.config(state='disabled')
 
-
     def update_info_labels(self, trial, speaker):
         """ Update the session info 'Trial' label. """
         self.trial_var.set(trial)
         self.speaker_var.set(speaker)
 
-
     def _on_next(self):
         """ Send NEXT event to controller. """
-        logger.debug("Sending 'NEXT' event to controller.")
+        logger.info("Sending 'NEXT' event to controller.")
         self.parent.event_generate('<<MainNext>>')
-
 
     def _on_select_all(self):
         """ Select all checkboxes convenience function. """
-        logger.debug("Selecting all checkbuttons")
+        logger.info("Selecting all checkbuttons")
         # Set all checkbutton variables to 1 (i.e., selected)
         for ii in self.buttonstates_dict:
             self.buttonstates_dict[ii].set(1)
 
-
     def _on_repeat(self):
         """ Repeat the current sentence. """
-        logger.debug("Sending REPEAT event to controller")
+        logger.info("Sending REPEAT event to controller")
         self.event_generate('<<MainRepeat>>')
 
 ################
